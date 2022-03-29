@@ -49,10 +49,23 @@ class Colsole
     {
         $to   = dirname(__LIM__) . '/helper';
         $sync = 'cp -r ' . __DIR__ . '/ ' . $to . ' && cd ' . $to . ' && sudo git add . && sudo git commit -m \'' . time() . '\' && sudo git push';
-        // echo $sync . PHP_EOL;
         shell_exec($sync);
-        // wlog($sync);
-        // wlog('composer sync');
+    }
+
+    public function git()
+    {
+        $action = array_shift($this->vars);
+        switch ($action) {
+            case 'push':
+                $branch = array_shift($this->vars) ?? 'dev';
+                $msg    = array_shift($this->vars) ?? time();
+                $script = 'sudo git add . && sudo git commit -m \'' . $msg . '\' && sudo git push origin ' . $branch;
+                shell_exec($script);
+                break;
+            default:
+                // code...
+                break;
+        }
     }
 
     public function gateway()
@@ -66,12 +79,12 @@ class Colsole
                 }
                 break;
             case 'start':
-                $opt = json_decode(file_get_contents($dir . '/service.json'),true);
+                $opt = json_decode(file_get_contents($dir . '/service.json'), true);
                 $srv = new Gateway;
                 $srv->widthServer($opt)->run(array_shift($this->vars));
                 break;
             case 'reload':
-                 $pid = file_get_contents('/var/log/'.str_replace('/','_',__LIM__).'.pid');
+                $pid = file_get_contents('/var/log/' . str_replace('/', '_', __LIM__) . '.pid');
                 echo shell_exec('sudo kill -10 ' . $pid);
                 break;
             default:
