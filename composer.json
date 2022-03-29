@@ -4,18 +4,16 @@
     "license": "Apache-2.0",
     "require": {
         "php": ">=8.0",
-        "ext-swoole": ">=4.6",
-        "ext-redis": "*"
+        "ext-swoole": ">=4.6"
     },
     "authors": [{
         "name": "WayrenChen",
         "email": "7871399@qq.com"
     }],
     "autoload": {
-        // "psr-4": {
-        //     "lim\\": "src\\core",
-        //     "configer\\": "src\\configer"
-        // },
+        "psr-4": {
+            "lim\\helper": "src\\helper"
+        },
         "files": ["src/helper.php"]
     },
     "minimum-stability": "dev"
