@@ -1,0 +1,22 @@
+{
+    "name": "phplim/helper",
+    "description": "Less is more",
+    "license": "Apache-2.0",
+    "require": {
+        "php": ">=8.0",
+        "ext-swoole": ">=4.6",
+        "ext-redis": "*"
+    },
+    "authors": [{
+        "name": "WayrenChen",
+        "email": "7871399@qq.com"
+    }],
+    "autoload": {
+        // "psr-4": {
+        //     "lim\\": "src\\core",
+        //     "configer\\": "src\\configer"
+        // },
+        "files": ["src/helper.php"]
+    },
+    "minimum-stability": "dev"
+}
