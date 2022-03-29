@@ -12,7 +12,7 @@
     }],
     "autoload": {
         "psr-4": {
-            "lim\\helper": "src\\helper"
+            "lim": "src"
         },
         "files": ["src/helper.php"]
     },
