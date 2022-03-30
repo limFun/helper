@@ -79,13 +79,38 @@ class Colsole
                 }
                 break;
             case 'start':
-                $opt = json_decode(file_get_contents($dir . '/service.json'), true);
+                $env = trim(array_shift($this->vars));
+                switch ($env) {
+                    case 'hyperf':
+                        $file = __LIM__. '/config/gateway.json';
+                        
+                        break;
+                    
+                    default:
+                        // code...
+                        break;
+                }
+
+                if (!is_file($file)) {
+                    echo "配置文件不存在\n";
+                    return;
+                }
+                
+                $opt = json_decode(file_get_contents($file), true);
+                $daemonize = '-d'==array_shift($this->vars) ? true :false;
+                file_put_contents(__LIM__.'/aa.json',json_encode($opt,JSON_PRETTY_PRINT));
                 $srv = new Gateway;
-                $srv->widthServer($opt)->run(array_shift($this->vars));
+                $srv->widthOption($opt)->run($daemonize);
                 break;
             case 'reload':
                 $pid = file_get_contents('/var/log/' . str_replace('/', '_', __LIM__) . '.pid');
                 echo shell_exec('sudo kill -10 ' . $pid);
+                break;
+            case 'stop':
+                $pid = file_get_contents('/var/log/' . str_replace('/', '_', __LIM__) . '.pid');
+                echo shell_exec('sudo kill -15 ' . $pid);
+                break;
+            case 'register':
                 break;
             default:
                 return;

@@ -5,31 +5,59 @@ namespace lim\Helper;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-03-29 18:08:22
+ * @Last Modified time: 2022-03-30 16:38:34
  */
 
+use function Swoole\Coroutine\Http\post;
 use function Swoole\Coroutine\run;
+use Swoole\Coroutine\Http\Client\Exception;
 use \swoole\Timer;
 
 class Gateway
 {
-    private $service = null;
 
-    public static $server;
+    public static $Gateway, $service = null;
 
-    public function widthServer($value = '')
+    public function widthOption($service = [])
     {
-        $this->service = $value;
+        // self::$service = $service;
+        $this->ip = (int) $service['gateway']['ip'] ?? null;
+        $this->port = (int) $service['gateway']['port'] ?? 9500;
+
+        foreach ($service['services'] ?? [] as $serviceType => $list) {
+
+            foreach ($list as $serviceName => $res) {
+                $this->service[$serviceName] = ['type' => $serviceType, 'url' => $res['url']];
+                // print_r([$serviceName,$serviceType,$res]);
+                foreach ($res['list'] as $api) {
+                    $arr = explode('=>', $api);
+                    if (isset($this->apiList[$arr[0]])) {
+                        echo "网关接口存在重复项:" . $arr[0] . PHP_EOL;
+                    }
+                    switch ($serviceType) {
+                        case 'http':
+                            $this->apiList[$arr[0]] = ['type' => $serviceType, 'url' => $res['url'] . ($arr[1] ?? $arr[0])];
+                            break;
+                        case 'rpc':
+                            $this->apiList[$arr[0]] = ['type' => $serviceType, 'name' => $serviceName, 'method' => $arr[1], 'url' => $res['url']];
+                    }
+                }
+            }
+
+        }
+
         return $this;
     }
 
-    public function run($daemonize = false)
+    function run($daemonize = false)
     {
+        if (!$this->ip) {
+            echo "配置文件不存在\n";
+            return;
+        }
 
         \Swoole\Coroutine::set(['enable_deadlock_check' => null, 'hook_flags' => SWOOLE_HOOK_ALL]);
- 		// if (!is_dir('/var/log/'.__LIM__)) {
- 		// 	shell_exec('sudo mkdir /var/log/'.__LIM__);
- 		// }
+
         $config = [
 
             'reactor_num'        => 1,
@@ -37,48 +65,44 @@ class Gateway
             // 'task_worker_num'       => (int) TASK_WORKER_NUM,
             // 'task_enable_coroutine' => true,
             'enable_coroutine'   => true,
-            'pid_file'           => '/var/log/'.str_replace('/','_',__LIM__).'.pid',
+            'pid_file'           => '/var/log/' . str_replace('/', '_', __LIM__) . '.pid',
             'log_level'          => SWOOLE_LOG_WARNING,
             'hook_flags'         => SWOOLE_HOOK_ALL,
             'max_wait_time'      => 1,
             'reload_async'       => true,
             'package_max_length' => 5 * 1024 * 1024,
             // 'max_coroutine'         => (int) MAX_COROUTINE,
-            'daemonize'             => true,
-            // 'document_root'         => ROOT . 'public',
-            // 'enable_static_handler' => true,
+            'daemonize'          => $daemonize,
         ];
 
-        print_r([$this->service,__LIM__]);
-
-        self::$server = new \Swoole\WebSocket\Server('0.0.0.0', $port ?? 7777);
-        self::$server->set($config);
-        self::$server->on('start', fn() => cli_set_process_title('Gateway'));
-        self::$server->on('managerstart', [$this, 'managerstart']);
-        self::$server->on('WorkerStart', [$this, 'WorkerStart']);
-        self::$server->on('task', [$this, 'task']);
-        self::$server->on('request', [$this, 'request']);
-        self::$server->on('message', [$this, 'message']);
-        self::$server->start();
+        self::$Gateway = new \Swoole\WebSocket\Server($this->ip,$this->port);
+        self::$Gateway->set($config);
+        self::$Gateway->on('start', fn() => cli_set_process_title('Gateway'));
+        self::$Gateway->on('managerstart', [$this, 'managerstart']);
+        self::$Gateway->on('WorkerStart', [$this, 'WorkerStart']);
+        // self::$server->on('task', [$this, 'task']);
+        self::$Gateway->on('request', [$this, 'request']);
+        self::$Gateway->on('message', [$this, 'message']);
+        self::$Gateway->start();
     }
 
-    public function managerstart($server)
+    function managerstart($server)
     {
         cli_set_process_title('-Manager');
 
         // Timer::tick(1000 * 10, function () {
-        // 	echo time().PHP_EOL;
+        //     echo time().PHP_EOL;
         //     // self::$server->task(['run' => $k]);
         // });
         echo ("服务启动成功\n");
     }
 
-    public function WorkerStart($server, int $workerId)
+    function WorkerStart($server, int $workerId)
     {
 
         try {
 
-            echo "服务启动\n";
+            // echo "服务启动\n";
             Timer::clearAll();
             if (function_exists('opcache_reset')) {
                 opcache_reset();
@@ -94,7 +118,7 @@ class Gateway
 
                 if ($id == 0) {
                     // print_r(get_defined_constants(true)['user']);
-                    // print_r(get_included_files());
+                    print_r(get_included_files());
                 }
                 cli_set_process_title('-Tasker');
             } else {
@@ -106,32 +130,110 @@ class Gateway
 
     }
 
-    public function task($value = '')
+    function task()
     {
 
     }
 
-    public function request($value = '')
+    function request($request, $response)
     {
-        // code...
+        $response->header('Content-Type', 'application/json');
+        if ($request->server['path_info'] == '/favicon.ico' || $request->server['request_uri'] == '/favicon.ico') {
+            $response->end();
+            return;
+        }
+
+        if (!$post = json_decode($request->getContent(), true)) {
+            $post = $request->post ?? [];
+        }
+
+        $vars = array_merge($post, $request->get ?? []);
+
+        $path = $request->server['request_uri'];
+        echo "{$path}\n";
+        //API调用
+        if ($api = $this->apiList[$path] ?? null) {
+            $res = match($api['type']) {
+                'http' => $this->http($api['url'], $vars, $request->header),
+                'rpc'  => $this->rpc($api['url'], $api['method'], [$vars], $request->header),
+            default=> [],
+            };
+            return $response->end(json_encode($res, 256));
+        }
+  		
+  		//服务发现
+        $name = strstr(substr($path, 1), '/', true);
+        if (!$srv = $this->service[$name] ?? null) {
+            return $response->end(json_encode(['code' => -1, 'message' => '服务不存在'], 256));
+        }
+
+        $res = match($srv['type']) {
+            'http' => $this->http($srv['url'] . $path, $vars, $request->header),
+            'rpc'  => $this->rpc($srv['url'], $path, [$vars], $request->header),
+        default=> [],
+        };
+        return $response->end(json_encode($res, 256));
     }
 
-    public function message($value = '')
+    function message()
     {
-        // code...
+
     }
 
-    // public  static function __callStatic($method, $args)
-    // {
-    //     print_r([$method, $args]);
-    //     switch ($method) {
-    //         case 'reload':
-    //             self::$server->reload();
-    //             break;
+    private function http($url, $params, $headers = [])
+    {
+        unset(
+            $headers['set-cookie'],
+            $headers['host'],
+            $headers['content-length'],
+            $headers['user-agent'],
+            $headers['accept'],
+            $headers['accept-encoding'],
+            $headers['accept-language'],
+            $headers['connection'],
+            $headers['content-type'],
+        );
+        $res = post($url, $params, null, $headers);
+        return json_decode($res->getBody(), true) ?? [];
+    }
 
-    //         default:
-    //             // code...
-    //             break;
-    //     }
-    // }
+    private function rpc($url, $method, $params, $headers = [])
+    {
+        unset(
+            $headers['set-cookie'],
+            $headers['host'],
+            $headers['content-length'],
+            $headers['user-agent'],
+            $headers['accept'],
+            $headers['accept-encoding'],
+            $headers['accept-language'],
+            $headers['connection'],
+            $headers['content-type'],
+        );
+
+        $options = [
+            "jsonrpc" => "2.0",
+            "method"  => $method,
+            "params"  => $params,
+            "id"      => time(),
+            "context" => [],
+        ];
+
+        $options = array_merge($options, $headers);
+        // print_r($headers);
+        try {
+            $res  = post($url, json_encode($options, 256))->getBody();
+            $body = json_decode($res, true);
+
+            if (isset($body['error'])) {
+                return $body['error'];
+            }
+
+        } catch (Exception $e) {
+            echo "服务连接失败\n";
+            $body['result'] = ['code' => -1, 'message' => '服务连接失败'];
+        }
+
+        return $body['result'] ?? null;
+    }
 }
