@@ -5,7 +5,7 @@ namespace lim\Helper;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-03-30 18:00:04
+ * @Last Modified time: 2022-03-30 18:24:06
  */
 
 use function Swoole\Coroutine\Http\post;
@@ -120,7 +120,7 @@ class Gateway
 
                 if ($id == 0) {
                     // print_r(get_defined_constants(true)['user']);
-                    print_r(get_included_files());
+                    // print_r(get_included_files());
                 }
                 cli_set_process_title('-Tasker');
             } else {
@@ -154,6 +154,7 @@ class Gateway
         $path = $request->server['request_uri'];
         echo "{$path}\n";
         //API调用
+       
         if ($api = $this->apiList[$path] ?? null) {
             $res = match($api['type']) {
                 'http' => $this->http($api['url'], $vars, $request->header),
@@ -196,6 +197,7 @@ class Gateway
             $headers['content-type'],
         );
         $res = post($url, $params, null, $headers);
+        // echo $res->getBody();
         return json_decode($res->getBody(), true) ?? [];
     }
 
