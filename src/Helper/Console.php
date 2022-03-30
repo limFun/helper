@@ -4,7 +4,7 @@ namespace lim\Helper;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-03-30 17:47:11
+ * @Last Modified time: 2022-03-30 17:59:50
  */
 
 
@@ -31,7 +31,7 @@ class Console
     public function self()
     {
         $to   = dirname(__LIM__) . '/helper';
-        $sync = 'cp -r ' . __DIR__ . '/ ' . $to . ' && cd ' . $to . ' && sudo git add . && sudo git commit -m \'' . time() . '\' && sudo git push';
+        $sync = 'cp -r ' . dirname(__DIR__) . '/ ' . $to . ' && cd ' . $to . ' && sudo git add . && sudo git commit -m \'' . time() . '\' && sudo git push';
         shell_exec($sync);
     }
 
