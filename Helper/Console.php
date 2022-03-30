@@ -1,19 +1,12 @@
 <?php
 namespace lim\Helper;
-
 /**
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-03-30 17:21:11
+ * @Last Modified time: 2022-03-30 17:47:11
  */
 
-use function Swoole\Coroutine\Http\post;
-use function Swoole\Coroutine\run;
-use Swoole\Coroutine\Http\Client\Exception;
-
-// use lim\Helper\Gateway;
-// use \swoole\Timer;
 
 class Console
 {
@@ -69,12 +62,13 @@ class Console
                 }
                 break;
             case 'start':
-             
+                // $env = trim();
+
                 $file = match (array_shift($this->vars)) {
-                    'hyperf' => __LIM__. '/config/gateway.php',
-                    default => __LIM__. '/config/gateway.php',
+                	// from => to,
+                	default => __LIM__. '/config/gateway.php',
                 };
-      
+  
                 if (!is_file($file)) {
                     echo "配置文件不存在\n";
                     return;

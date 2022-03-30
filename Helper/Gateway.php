@@ -5,7 +5,7 @@ namespace lim\Helper;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-03-30 17:32:55
+ * @Last Modified time: 2022-03-30 17:45:56
  */
 
 use function Swoole\Coroutine\Http\post;
@@ -28,17 +28,17 @@ class Gateway
 
             foreach ($list as $serviceName => $res) {
                 $this->service[$serviceName] = ['type' => $serviceType, 'url' => $res['url']];
-                // print_r([$serviceName,$serviceType,$res['list']]);
-                // print_r($res['list']);
-                foreach ($res['list'] as $api => $path) {
-                    $api = is_numeric($api) ? $path :$api;
-            
+                // print_r([$serviceName,$serviceType,$res]);
+                foreach ($res['list'] as $api =>$path) {
+                    $api = is_numeric($api)?$path:$api;
+
+                    $arr = explode('=>', $api);
                     if (isset($this->apiList[$api])) {
                         echo "网关接口存在重复项:" . $api . PHP_EOL;
                     }
                     switch ($serviceType) {
                         case 'http':
-                            $this->apiList[$api] = ['type' => $serviceType, 'url' => $res['url'] . $path];
+                            $this->apiList[$api] = ['type' => $serviceType, 'url' => $res['url'] .$path];
                             break;
                         case 'rpc':
                             $this->apiList[$api] = ['type' => $serviceType, 'name' => $serviceName, 'method' => $path, 'url' => $res['url']];
@@ -47,8 +47,7 @@ class Gateway
             }
 
         }
-
-        // print_r($this->apiList);
+        print_r($this->apiList);
         return $this;
     }
 
