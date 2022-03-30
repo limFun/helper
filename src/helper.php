@@ -16,7 +16,7 @@ function loader($class)
     if (is_file($file)) {
         require_once $file;
     } else {
-        echo $file . PHP_EOL;
+        // echo $file . PHP_EOL;
         // exit(json_encode(['code' => 300, 'msg' => $file . " 不存在"], 256));
     }
 }
