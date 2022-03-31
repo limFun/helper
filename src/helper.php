@@ -15,8 +15,15 @@ function loader($class)
 
     if (is_file($file)) {
         require_once $file;
-    } else {
-        // echo $file . PHP_EOL;
-        // exit(json_encode(['code' => 300, 'msg' => $file . " 不存在"], 256));
+    }
+}
+
+if (!function_exists('env')) {
+    function env($key = null, $value = 'SSS')
+    {
+        if (!is_file(__LIM__.'/.env')) {
+            return $value;
+        }
+        return parse_ini_file(__LIM__.'/.env',true)[$key]??$value;
     }
 }
