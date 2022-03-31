@@ -5,7 +5,7 @@ namespace lim\Helper;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-03-31 10:18:36
+ * @Last Modified time: 2022-03-31 10:27:04
  */
 
 class Console
@@ -30,6 +30,17 @@ class Console
 
     }
 
+    public function env()
+    {
+        if (!is_file(__LIM__.'/composer.json')) {
+            return null;
+        }
+
+        $composer = json_decode(file_get_contents(__LIM__.'/composer.json'),true);
+
+        print_r($composer);
+    }
+
     public function self()
     {
         $to   = dirname(__LIM__) . '/helper';
@@ -39,9 +50,9 @@ class Console
 
     public function app()
     {
-        $fn=array_shift($this->vars);
+        $action=array_shift($this->vars);
 
-        switch ($fn) {
+        switch ($action) {
             case 'start':
                 // code...
                 break;
