@@ -21,9 +21,26 @@ function loader($class)
 if (!function_exists('env')) {
     function env($key = null, $value = 'SSS')
     {
-        if (!is_file(__LIM__.'/.env')) {
+        if (!is_file(__LIM__ . '/.env')) {
             return $value;
         }
-        return parse_ini_file(__LIM__.'/.env',true)[$key]??$value;
+        return parse_ini_file(__LIM__ . '/.env', true)[$key] ?? $value;
+    }
+}
+
+if (!function_exists('proc')) {
+    function proc($fn = null, $name = null)
+    {
+        if (!is_object($fn)) {
+            return;
+        }
+
+        $proc = new \Swoole\Process($fn);
+        if ($name) {
+            cli_set_process_title($name);
+        }
+        $proc->daemon();
+        $proc->start();
+       
     }
 }
