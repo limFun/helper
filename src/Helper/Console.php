@@ -5,7 +5,7 @@ namespace lim\Helper;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-03-31 10:27:04
+ * @Last Modified time: 2022-03-31 10:57:17
  */
 
 class Console
@@ -32,13 +32,17 @@ class Console
 
     public function env()
     {
-        if (!is_file(__LIM__.'/composer.json')) {
+        if (!is_file(__LIM__ . '/composer.json')) {
             return null;
         }
 
-        $composer = json_decode(file_get_contents(__LIM__.'/composer.json'),true);
-
-        print_r($composer);
+        $composer = json_decode(file_get_contents(__LIM__ . '/composer.json'), true);
+        $env      = match($composer['name'] ?? null) {
+            'hyperf/hyperf-skeleton' => 'hyperf',
+            'laravel/laravel' => 'laravel',
+        default=> null,
+        };
+        return $env;
     }
 
     public function self()
@@ -50,13 +54,15 @@ class Console
 
     public function app()
     {
-        $action=array_shift($this->vars);
+        $action = array_shift($this->vars);
 
         switch ($action) {
-            case 'start':
-                // code...
+            case 'watch':
+                    echo $this->env();
+                    // echo $script = "sudo php ".__LIM__."/bin/hyperf.php start";
+                    // shell_exec($script);
                 break;
-            
+
             default:
                 // code...
                 break;
@@ -65,7 +71,7 @@ class Console
 
     public function fnc()
     {
-        $fn=array_shift($this->vars);
+        $fn = array_shift($this->vars);
         $fn(...$this->vars);
     }
 
