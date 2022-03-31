@@ -1,12 +1,12 @@
 <?php
 namespace lim\Helper;
-
 /**
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-03-31 10:05:27
+ * @Last Modified time: 2022-03-30 17:59:50
  */
+
 
 class Console
 {
@@ -22,9 +22,7 @@ class Console
 
         try {
             $this->$method();
-        } catch (\Error $e) {
-            print_r($e);
-        } catch (\Swoole\ExitException $e) {
+        } catch (Throwable $e) {
             print_r($e);
         }
 
@@ -35,12 +33,6 @@ class Console
         $to   = dirname(__LIM__) . '/helper';
         $sync = 'cp -r ' . dirname(__DIR__) . '/ ' . $to . ' && cd ' . $to . ' && sudo git add . && sudo git commit -m \'' . time() . '\' && sudo git push';
         shell_exec($sync);
-    }
-
-    public function fnc()
-    {
-        $fn=array_shift($this->vars);
-        $fn(...$this->vars);
     }
 
     public function git()
@@ -72,18 +64,18 @@ class Console
             case 'start':
                 // $env = trim();
 
-                $file = match(array_shift($this->vars)) {
-                // from => to,
-                default=> __LIM__ . '/config/gateway.php',
+                $file = match (array_shift($this->vars)) {
+                	// from => to,
+                	default => __LIM__. '/config/gateway.php',
                 };
-
+  
                 if (!is_file($file)) {
                     echo "配置文件不存在\n";
                     return;
                 }
-
-                $opt       = include $file;
-                $daemonize = '-d' == array_shift($this->vars) ? true : false;
+                
+                $opt = include $file;
+                $daemonize = '-d'==array_shift($this->vars) ? true :false;
                 // file_put_contents(__LIM__.'/aa.json',json_encode($opt,JSON_PRETTY_PRINT));
                 $srv = new Gateway;
                 $srv->widthOption($opt)->run($daemonize);

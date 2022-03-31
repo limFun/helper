@@ -5,7 +5,7 @@ namespace lim\Helper;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-03-31 10:01:14
+ * @Last Modified time: 2022-03-30 18:24:06
  */
 
 use function Swoole\Coroutine\Http\post;
@@ -77,7 +77,7 @@ class Gateway
             'daemonize'          => $daemonize,
         ];
 
-        self::$Gateway = new \Swoole\WebSocket\Server("0.0.0.0",$this->port);
+        self::$Gateway = new \Swoole\WebSocket\Server($this->ip,$this->port);
         self::$Gateway->set($config);
         self::$Gateway->on('start', fn() => cli_set_process_title('Gateway'));
         self::$Gateway->on('managerstart', [$this, 'managerstart']);
