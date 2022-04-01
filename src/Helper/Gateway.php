@@ -5,7 +5,7 @@ namespace lim\Helper;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-04-01 10:55:02
+ * @Last Modified time: 2022-04-01 16:11:51
  */
 
 use function Swoole\Coroutine\Http\post;
@@ -141,6 +141,9 @@ class Gateway
     function request($request, $response)
     {
         $response->header('Content-Type', 'application/json');
+        $response->header("Access-Control-Allow-Origin", "*");
+        $response->header("Access-Control-Allow-Methods", "*");
+        $response->header("Access-Control-Allow-Headers", "*");
         if ($request->server['path_info'] == '/favicon.ico' || $request->server['request_uri'] == '/favicon.ico') {
             $response->end();
             return;
