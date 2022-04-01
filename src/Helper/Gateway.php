@@ -5,10 +5,11 @@ namespace lim\Helper;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-03-31 10:01:14
+ * @Last Modified time: 2022-04-01 10:55:02
  */
 
 use function Swoole\Coroutine\Http\post;
+use function Swoole\Coroutine\Http\get;
 use function Swoole\Coroutine\run;
 use Swoole\Coroutine\Http\Client\Exception;
 use \swoole\Timer;
@@ -152,6 +153,7 @@ class Gateway
         $vars = array_merge($post, $request->get ?? []);
 
         $path = $request->server['request_uri'];
+        $this->request_method = $request->server['request_method'];
         echo "{$path}\n";
         //API调用
        
@@ -196,7 +198,13 @@ class Gateway
             $headers['connection'],
             $headers['content-type'],
         );
-        $res = post($url, $params, null, $headers);
+
+        if ($this->request_method=='GET') {
+            $res = get($url.'?'.http_build_query($params),  null, $headers);
+        } else {
+            $res = post($url, $params, null, $headers);
+        }
+        
         // echo $res->getBody();
         return json_decode($res->getBody(), true) ?? [];
     }
