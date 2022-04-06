@@ -5,7 +5,7 @@ namespace lim\Helper;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-04-01 16:11:51
+ * @Last Modified time: 2022-04-06 18:25:46
  */
 
 use function Swoole\Coroutine\Http\post;
@@ -59,6 +59,10 @@ class Gateway
             return;
         }
 
+        if (!is_dir(__LIM__.'/runtime')) {
+            mkdir(__LIM__.'/runtime');
+        }
+
         \Swoole\Coroutine::set(['enable_deadlock_check' => null, 'hook_flags' => SWOOLE_HOOK_ALL]);
 
         $config = [
@@ -68,7 +72,7 @@ class Gateway
             // 'task_worker_num'       => (int) TASK_WORKER_NUM,
             // 'task_enable_coroutine' => true,
             'enable_coroutine'   => true,
-            'pid_file'           => '/var/log/' . str_replace('/', '_', __LIM__) . '.pid',
+            'pid_file'           => __LIM__ . '/runtime/gateway.pid',
             'log_level'          => SWOOLE_LOG_WARNING,
             'hook_flags'         => SWOOLE_HOOK_ALL,
             'max_wait_time'      => 1,
