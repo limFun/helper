@@ -18,6 +18,41 @@ function loader($class)
     }
 }
 
+
+if (! function_exists('conf')) {
+    /**
+     * @return bool|int
+     */
+    function conf($key='',$value='')
+    {
+        return ['name'=>'sas','port'=>9875];
+    }
+}
+
+if (! function_exists('go')) {
+    /**
+     * @return bool|int
+     */
+    function go(callable $callable)
+    {
+        $id = \Swoole\Coroutine::create($callable);
+        return $id > 0 ? $id : false;
+    }
+}
+
+
+if (!function_exists('wlog')) {
+    function wlog($v='')
+    {
+        $v   = is_array($v) ? json_encode($v, 256) : $v;
+        $log = date('H:i:s') . ' ' . $v . PHP_EOL;
+        if (PHP_SAPI == 'cli') {
+            echo $log;
+        }
+    }
+}
+
+
 if (!function_exists('env')) {
     function env($key = null, $value = 'SSS')
     {

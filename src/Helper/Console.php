@@ -5,7 +5,7 @@ namespace lim\Helper;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-03-31 14:08:05
+ * @Last Modified time: 2022-04-06 19:42:01
  */
 
 class Console
@@ -27,6 +27,23 @@ class Console
         } catch (\Swoole\ExitException $e) {
             print_r($e);
         }
+
+    }
+
+    public function start()
+    {
+        if (!$service = array_shift($this->vars)) {
+            wlog('请指定服务');
+            return;
+        }
+
+        require_once __LIM__.'/app/Service/'.$service.'.php';
+        $opt = conf($service);
+        $service = 'app\\Service\\'.$service;
+
+        $app = new $service($opt);
+        $app->start();
+        print_r([$this->vars,$app]);
 
     }
 

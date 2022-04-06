@@ -6,7 +6,7 @@ namespace lim\Helper;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-04-06 18:27:28
+ * @Last Modified time: 2022-04-06 19:11:18
  */
 
 use function Swoole\Coroutine\Http\post;
@@ -24,8 +24,12 @@ class Server
         $this->opt = $opt;
     }
 
-    function run()
+    function start()
     {
+
+        if (!is_dir(__LIM__.'/runtime')) {
+            mkdir(__LIM__.'/runtime');
+        }
 
         Coroutine::set(['enable_deadlock_check' => null, 'hook_flags' => SWOOLE_HOOK_ALL]);
 
@@ -34,7 +38,7 @@ class Server
             'reactor_num'        => 1,
             // 'task_enable_coroutine' => true,
             'enable_coroutine'   => true,
-            'pid_file'           => __LIM__.'/' . str_replace('/', '_', __LIM__) . '.pid',
+            'pid_file'           => __LIM__.'/runtime/'.$this->opt['name'].'.pid',
             'log_level'          => SWOOLE_LOG_WARNING,
             'hook_flags'         => SWOOLE_HOOK_ALL,
             'max_wait_time'      => 1,
@@ -49,7 +53,6 @@ class Server
         $this->server->on('start', fn() => cli_set_process_title($this->opt['name']));
         $this->server->on('managerstart', [$this, 'managerstart']);
         $this->server->on('WorkerStart', [$this, 'WorkerStart']);
-        // self::$server->on('task', [$this, 'task']);
         $this->server->on('request', [$this, 'request']);
         $this->server->on('message', [$this, 'message']);
         $this->server->start();
