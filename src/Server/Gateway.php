@@ -5,7 +5,7 @@ namespace lim\Server;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-04-07 14:20:56
+ * @Last Modified time: 2022-04-07 15:16:58
  */
 
 use function Swoole\Coroutine\Http\get;
@@ -39,10 +39,10 @@ class Gateway
         $this->ip   = (int) $opt['ip'] ?? null;
         $this->port = (int) $opt['port'] ?? 9500;
 
-        foreach ($opt['extended'] ?? [] as $serviceType => $list) {
+        foreach ($opt['service'] ?? [] as $serviceType => $list) {
 
             foreach ($list as $serviceName => $res) {
-                $this->opt[$serviceName] = ['type' => $serviceType, 'url' => $res['url']];
+                $this->service[$serviceName] = ['type' => $serviceType, 'url' => $res['url']];
                 // print_r([$serviceName,$serviceType,$res]);
                 foreach ($res['list'] as $api => $path) {
                     $api = is_numeric($api) ? $path : $api;
@@ -62,7 +62,7 @@ class Gateway
             }
 
         }
-        // print_r($this->apiList);
+        // print_r($this);
         return $this;
     }
 
@@ -179,6 +179,7 @@ class Gateway
 
         //服务发现
         $name = strstr(substr($path, 1), '/', true);
+        // echo "{$name}\n";
         if (!$srv = $this->service[$name] ?? null) {
             return $response->end(json_encode(['code' => -1, 'message' => '服务不存在'], 256));
         }
