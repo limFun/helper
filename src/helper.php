@@ -1,8 +1,20 @@
 <?php
 declare (strict_types = 1);
-// spl_autoload_register('loader');
+spl_autoload_register('loader');
 
 !defined('__LIM__') && define('__LIM__', strstr(__DIR__, '/vendor', true));
+
+function loader($class)
+{
+    $arr  = explode('\\', $class);
+    $file = __LIM__ . '/' . implode('/', $arr) . '.php';
+    if (is_file($file)) {
+        require_once $file;
+    } else {
+        echo $file;
+        // exit(json_encode(['code' => 300, 'msg' => $file . " 不存在"], 256));
+    }
+}
 
 // function loader($class)
 // {
@@ -18,17 +30,17 @@ declare (strict_types = 1);
 //     }
 // }
 
-if (! function_exists('conf')) {
+if (!function_exists('conf')) {
     /**
      * @return bool|int
      */
-    function conf($key='',$value='')
+    function conf($key = '', $value = '')
     {
-        return ['name'=>'sas','port'=>9875];
+        return ['name' => 'sas', 'port' => 9875];
     }
 }
 
-if (! function_exists('go')) {
+if (!function_exists('go')) {
     /**
      * @return bool|int
      */
@@ -39,9 +51,8 @@ if (! function_exists('go')) {
     }
 }
 
-
 if (!function_exists('wlog')) {
-    function wlog($v='')
+    function wlog($v = '')
     {
         $v   = is_array($v) ? json_encode($v, 256) : $v;
         $log = date('H:i:s') . ' ' . $v . PHP_EOL;
@@ -74,6 +85,33 @@ if (!function_exists('proc')) {
         }
         $proc->daemon();
         $proc->start();
-       
+
+    }
+}
+
+loadHelper();
+
+function loadHelper($dir = null)
+{
+    $dir = $dir ?? __LIM__ . "/app";
+    if (is_dir($dir) && $handle = opendir($dir)) {
+        while (($file = readdir($handle)) !== false) {
+            if (($file == ".") || ($file == "..")) {
+                continue;
+            }
+            $path = $dir . '/' . $file;
+            if (is_dir($path)) {
+                // wlog($path);
+                loadHelper($path);
+
+                continue;
+            }
+
+            if ($file == 'helper.php') {
+                wlog($path);
+                require_once $path;
+            }
+        }
+        closedir($handle);
     }
 }

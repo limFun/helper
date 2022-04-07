@@ -5,7 +5,7 @@ namespace lim;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-04-07 14:27:44
+ * @Last Modified time: 2022-04-07 19:26:24
  */
 
 class Console
@@ -157,4 +157,27 @@ class Console
         }
         echo ' -> ' . $action . PHP_EOL;
     }
+
+    public function ws()
+    {
+        $action = array_shift($this->vars);
+        switch ($action) {
+            case 'start':
+                $daemonize = '-d' == array_shift($this->vars) ? true : false;
+                $srv = new Server\WebsocketServer($daemonize);
+                break;
+            case 'reload':
+                $pid = file_get_contents(__LIM__.'/runtime/websocket.pid');
+                echo shell_exec('sudo kill -10 ' . $pid);
+                break;
+            case 'stop':
+                $pid = file_get_contents(__LIM__.'/runtime/websocket.pid');
+                echo shell_exec('sudo kill -15 ' . $pid);
+                break;
+            default:
+                return;
+        }
+        echo ' -> ' . $action . PHP_EOL;
+    }
+
 }
