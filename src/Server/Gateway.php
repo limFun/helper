@@ -5,7 +5,7 @@ namespace lim\Server;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-04-08 12:23:42
+ * @Last Modified time: 2022-04-08 18:20:12
  */
 
 use function Swoole\Coroutine\Http\get;
@@ -22,7 +22,7 @@ class Gateway
     function __construct($daemonize = false)
     {
         $file = __LIM__ . '/config/gateway.php';
-        
+
         if (!is_file($file)) {
             echo "配置文件不存在\n";
             return;
@@ -91,54 +91,37 @@ class Gateway
             'daemonize'          => $daemonize,
         ];
 
-        self::$Gateway = new \Swoole\WebSocket\Server("0.0.0.0", $this->port);
-        self::$Gateway->set($config);
-        self::$Gateway->on('start', fn() => cli_set_process_title('Gateway'));
-        self::$Gateway->on('managerstart', [$this, 'managerstart']);
-        self::$Gateway->on('WorkerStart', [$this, 'WorkerStart']);
+        $this->server = new \Swoole\WebSocket\Server("0.0.0.0", $this->port);
+        $this->server->set($config);
+        $this->server->on('start', fn() => cli_set_process_title('Gateway'));
+        $this->server->on('managerstart', [$this, 'managerstart']);
+        $this->server->on('WorkerStart', [$this, 'WorkerStart']);
         // self::$server->on('task', [$this, 'task']);
-        self::$Gateway->on('request', [$this, 'request']);
-        self::$Gateway->on('message', [$this, 'message']);
-        self::$Gateway->start();
+
+        $this->server->on('receive', [$this, 'receive']);
+        $this->server->on('request', [$this, 'request']);
+        $this->server->on('message', [$this, 'message']);
+        $this->server->start();
     }
 
     function managerstart($server)
     {
-        cli_set_process_title('-Manager');
-        echo ("服务启动成功\n");
+        cli_set_process_title('Manager');
     }
 
     function WorkerStart($server, int $workerId)
     {
-
-        try {
-
-            // echo "服务启动\n";
-            Timer::clearAll();
-            if (function_exists('opcache_reset')) {
-                opcache_reset();
-            }
-
-            // wlog('缓存配置');
-
-            //同步配置文件
-            // Timer::tick(10 * 1000, fn() => static::$extend = uc('config'));
-
-            if ($server->taskworker) {
-                $id = $workerId - $server->setting['worker_num'];
-
-                if ($id == 0) {
-                    // print_r(get_defined_constants(true)['user']);
-                    // print_r(get_included_files());
-                }
-                cli_set_process_title('-Tasker');
-            } else {
-                cli_set_process_title('-Worker');
-            }
-        } catch (\Swoole\ExitException $e) {
-            echo ($e->getStatus());
+        Timer::clearAll();
+        if (function_exists('opcache_reset')) {
+            opcache_reset();
         }
 
+        if ($server->taskworker) {
+            // $id = $workerId - $server->setting['worker_num'];
+            cli_set_process_title('Tasker');
+        } else {
+            cli_set_process_title('Worker');
+        }
     }
 
     function task()
@@ -146,98 +129,121 @@ class Gateway
 
     }
 
-    function request($request, $response)
+    function receive($server, $fd, $reactorId, $data)
+    {
+        print_r([$fd, $data]);
+    }
+
+    public function request($request, $response)
     {
         $response->header('Content-Type', 'application/json');
         $response->header("Access-Control-Allow-Origin", "*");
-        $response->header("Access-Control-Allow-Methods", "*");
+        $response->header("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
         $response->header("Access-Control-Allow-Headers", "*");
+
         if ($request->server['path_info'] == '/favicon.ico' || $request->server['request_uri'] == '/favicon.ico') {
             $response->end();
             return;
         }
 
-        if (!$post = json_decode($request->getContent(), true)) {
-            $post = $request->post ?? [];
-        }
-
-        $vars = array_merge($post, $request->get ?? []);
-
-        $path                 = $request->server['request_uri'];
-        $this->request_method = $request->server['request_method'];
-        echo "{$path}\n";
-        //API调用
-
-        if ($api = $this->apiList[$path] ?? null) {
-            $start = microtime(true);
-            $res = match($api['type']) {
-                'http' => $this->http($api['url'], $vars, $request->header),
-                'rpc'  => $this->rpc($api['url'], $api['method'], [$vars], $request->header),
-            default=> [],
-            };
-            $res['useTime']=intval((microtime(true)-$start)*1000);
-            return $response->end(json_encode($res, 256));
-        }
-
-        //服务发现
-        $name = strstr(substr($path, 1), '/', true);
-        // echo "{$name}\n";
-        if (!$srv = $this->service[$name] ?? null) {
-            return $response->end(json_encode(['code' => -1, 'message' => '服务不存在'], 256));
-        }
-        $start = microtime(true);
-        $res = match($srv['type']) {
-            'http' => $this->http($srv['url'] . $path, $vars, $request->header),
-            'rpc'  => $this->rpc($srv['url'], $path, [$vars], $request->header),
-        default=> [],
-        };
-        $res['useTime']=intval((microtime(true)-$start)*1000);
-        return $response->end(json_encode($res, 256));
+        $result = $this->parseReq($request);
+        return $response->end($result);
     }
 
-    function message()
+    public function message($server, $frame)
     {
+        $result = $this->parseReq($frame);
+        return $server->push($frame->fd, $result);
+    }
 
+    /**
+     * 解析请求
+     * @Author   Wayren
+     * @DateTime 2022-04-08T16:38:03+0800
+     * @param    [type]                   $req [description]
+     * @return   [type]                        [description]
+     */
+    private function parseReq($req)
+    {
+        $header = [];
+        if ($req instanceof \Swoole\WebSocket\Frame) {
+            // print_r($req);
+            $tmp  = json_decode($req->data, true);
+            $path = $tmp['method'] ?? null;
+            $data = $tmp['data'] ?? [];
+
+            unset($tmp['method'], $tmp['data']);
+
+            $header               = array_merge($tmp, ['fd' => $req->fd]);
+            $this->request_method = 'POST';
+        } else {
+            if (!$post = json_decode($req->getContent(), true)) {
+                $post = $req->post ?? [];
+            }
+            $data                 = array_merge($post, $req->get ?? []);
+            $path                 = $req->server['request_uri'];
+            $this->request_method = $req->server['request_method'];
+
+            if (isset($req->header['number'])) {
+                $header['number'] = $req->header['number'];
+            }
+            if (isset($req->header['authorization'])) {
+                $header['authorization'] = $req->header['authorization'];
+            }
+            if (isset($req->header['user'])) {
+                $header['user'] = $req->header['user'];
+            }
+
+            if (isset($req->header['fd'])) {
+                return $this->server->push($req->header['fd'], json_encode($data, 256));
+            }
+        }
+        // print_r([$path, $data, $header]);
+
+        $name = strstr(substr($path, 1), '/', true);
+
+        $start = microtime(true);
+
+        if ($api = $this->apiList[$path] ?? null) {
+            $res = match($api['type']) {
+                'http' => $this->http($api['url'], $vars, $header),
+                'rpc'  => $this->rpc($api['url'], $api['method'], [$vars], $header),
+            default=> [],
+            };
+
+        } else {
+            if (!$srv = $this->service[$name] ?? null) {
+                return json_encode(['code' => -1, 'message' => '服务不存在'], 256);
+            }
+
+            $res = match($srv['type']) {
+                'http' => $this->http($srv['url'] . $path, $data, $header),
+                'rpc'  => $this->rpc($srv['url'], $path, [$data], $header),
+            default=> [],
+            };
+        }
+
+        $res['useTime'] = intval((microtime(true) - $start) * 1000);
+        return json_encode($res, 256);
     }
 
     private function http($url, $params, $headers = [])
     {
-        unset(
-            $headers['set-cookie'],
-            $headers['host'],
-            $headers['content-length'],
-            $headers['user-agent'],
-            $headers['accept'],
-            $headers['accept-encoding'],
-            $headers['accept-language'],
-            $headers['connection'],
-            $headers['content-type'],
-        );
-
-        if ($this->request_method == 'GET') {
-            $res = get($url . '?' . http_build_query($params), null, $headers);
-        } else {
-            $res = post($url, $params, null, $headers);
+        try {
+            if ($this->request_method == 'GET') {
+                $res = get($url . '?' . http_build_query($params), null, $headers);
+            } else {
+                $res = post($url, $params, null, $headers);
+            }
+        } catch (Exception $e) {
+            return ['code' => -1, 'message' => '服务连接失败'];
         }
 
-        // echo $res->getBody();
         return json_decode($res->getBody(), true) ?? [];
     }
 
     private function rpc($url, $method, $params, $headers = [])
     {
-        unset(
-            $headers['set-cookie'],
-            $headers['host'],
-            $headers['content-length'],
-            $headers['user-agent'],
-            $headers['accept'],
-            $headers['accept-encoding'],
-            $headers['accept-language'],
-            $headers['connection'],
-            $headers['content-type'],
-        );
-
         $options = [
             "jsonrpc" => "2.0",
             "method"  => $method,
@@ -247,7 +253,6 @@ class Gateway
         ];
 
         $options = array_merge($options, $headers);
-        // print_r($headers);
         try {
             $res  = post($url, json_encode($options, 256))->getBody();
             $body = json_decode($res, true);

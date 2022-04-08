@@ -6,7 +6,7 @@ namespace lim\Server;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-04-07 11:43:50
+ * @Last Modified time: 2022-04-08 13:22:04
  */
 
 use function Swoole\Coroutine\Http\post;
@@ -108,9 +108,10 @@ class WebsocketServer
         return $response->end(json_encode($res, 256));
     }
 
-    function message()
+    function message(Swoole\WebSocket\Server $server,$frame)
     {
-
+        print_r($frame);
+        $server->push($frame->fd,$frame);
     }
 
     function __call($method,$argv){

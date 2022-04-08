@@ -13,6 +13,18 @@ function loader($class)
     } 
 }
 
+
+if (!function_exists('message')) {
+    /**
+     * @return bool|int
+     */
+    function message($contents,$event=[])
+    {
+        return new lim\Helper\MessageClient($contents,$event);
+    }
+}
+
+
 if (!function_exists('conf')) {
     /**
      * @return bool|int
