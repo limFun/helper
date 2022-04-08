@@ -157,4 +157,26 @@ class Console
         }
         echo ' -> ' . $action . PHP_EOL;
     }
+
+    public function ws()
+    {
+        $action = array_shift($this->vars);
+        switch ($action) {
+            case 'start':
+                $daemonize = '-d' == array_shift($this->vars) ? true : false;
+                $srv = new Server\WebsocketServer($daemonize);
+                break;
+            case 'reload':
+                $pid = file_get_contents(__LIM__.'/runtime/websocket.pid');
+                echo shell_exec('sudo kill -10 ' . $pid);
+                break;
+            case 'stop':
+                $pid = file_get_contents(__LIM__.'/runtime/websocket.pid');
+                echo shell_exec('sudo kill -15 ' . $pid);
+                break;
+            default:
+                return;
+        }
+        echo ' -> ' . $action . PHP_EOL;
+    }
 }
