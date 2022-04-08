@@ -5,7 +5,7 @@ namespace lim\Server;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-04-07 15:16:58
+ * @Last Modified time: 2022-04-08 12:23:42
  */
 
 use function Swoole\Coroutine\Http\get;
@@ -169,11 +169,13 @@ class Gateway
         //API调用
 
         if ($api = $this->apiList[$path] ?? null) {
+            $start = microtime(true);
             $res = match($api['type']) {
                 'http' => $this->http($api['url'], $vars, $request->header),
                 'rpc'  => $this->rpc($api['url'], $api['method'], [$vars], $request->header),
             default=> [],
             };
+            $res['useTime']=intval((microtime(true)-$start)*1000);
             return $response->end(json_encode($res, 256));
         }
 
@@ -183,12 +185,13 @@ class Gateway
         if (!$srv = $this->service[$name] ?? null) {
             return $response->end(json_encode(['code' => -1, 'message' => '服务不存在'], 256));
         }
-
+        $start = microtime(true);
         $res = match($srv['type']) {
             'http' => $this->http($srv['url'] . $path, $vars, $request->header),
             'rpc'  => $this->rpc($srv['url'], $path, [$vars], $request->header),
         default=> [],
         };
+        $res['useTime']=intval((microtime(true)-$start)*1000);
         return $response->end(json_encode($res, 256));
     }
 
