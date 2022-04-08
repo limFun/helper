@@ -10,25 +10,8 @@ function loader($class)
     $file = __LIM__ . '/' . implode('/', $arr) . '.php';
     if (is_file($file)) {
         require_once $file;
-    } else {
-        echo $file;
-        // exit(json_encode(['code' => 300, 'msg' => $file . " 不存在"], 256));
-    }
+    } 
 }
-
-// function loader($class)
-// {
-//     $arr = explode('\\', $class);
-//     if ($arr[0] == 'lim') {
-//         array_shift($arr);
-//     }
-
-//     $file = __DIR__ . '/' . implode('/', $arr) . '.php';
-
-//     if (is_file($file)) {
-//         require_once $file;
-//     }
-// }
 
 if (!function_exists('conf')) {
     /**
@@ -86,6 +69,13 @@ if (!function_exists('proc')) {
         $proc->daemon();
         $proc->start();
 
+    }
+}
+
+if (!function_exists('rpc')) {
+    function rpc($service = null,$onlyData=true)
+    {
+        return new lim\Helper\Rpclient($service,$onlyData);
     }
 }
 
