@@ -4,6 +4,8 @@ spl_autoload_register('loader');
 
 !defined('__LIM__') && define('__LIM__', strstr(__DIR__, '/vendor', true));
 
+
+
 function loader($class)
 {
     $arr  = explode('\\', $class);
@@ -50,10 +52,12 @@ if (!function_exists('go')) {
 if (!function_exists('wlog')) {
     function wlog($v = '')
     {
-        $v   = is_array($v) ? json_encode($v, 256) : $v;
-        $log = date('H:i:s') . ' ' . $v . PHP_EOL;
+        $v   = is_array($v) ? print_r($v,true) : $v;
+        $log = '\\e[36m['.date('H:i:s') . '] \\e[32m' . $v . PHP_EOL;
         if (PHP_SAPI == 'cli') {
-            echo $log;
+            // echo $log;
+
+            echo shell_exec('printf "'.$log.'"');
         }
     }
 }
@@ -91,6 +95,8 @@ if (!function_exists('rpc')) {
         return new lim\Helper\Rpclient($service,$onlyData);
     }
 }
+
+lim\Helper\IO::register();
 
 loadHelper();
 

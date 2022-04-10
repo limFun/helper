@@ -16,7 +16,7 @@ use swoole\Timer;
 
 class WebsocketServer
 {
-    public static $server,$io;
+    public static $server,$ext;
     function __construct($daemonize = false)
     {
         $file = __LIM__ . '/config/websocket.php';
@@ -137,11 +137,18 @@ class WebsocketServer
     public function task($server, $task)
     {
         
-        if (isset($task->data['obj'])) {
-            new $task->data['obj'];
+        if (!is_array($task->data)) {
+            return;
         }
 
-        // print_r($task);
+        switch (key($task->data)) {
+            case 'obj':
+                new $task->data['obj'];
+                break;
+            default:
+                // code...
+                break;
+        }
     }
 
     private function loadTasker()

@@ -54,8 +54,24 @@ class Rpclient
         return $this;
     }
 
+    public function cache($value='',$exp = 0)
+    {
+        $this->cacheKey = $value;
+        $this->cacheExp = $exp;
+        return $this;
+    }
+
     public function parse($method, $params)
     {
+        if (isset($this->cacheKey)) {
+            $cache = \lim\Helper\IO::$io->get($this->cacheKey);
+            
+            if ($cache!==false) {
+                wlog('get cache');
+                return $cache;
+            }
+        }
+
         if ($this->message) {
             return ['code' => -1, 'message' => $this->message];
         }
@@ -97,6 +113,11 @@ class Rpclient
         if (isset($body['error'])) {
             return $body['error'];
         }
+
+        if (isset($this->cacheKey)) {
+            \lim\Helper\IO::$io->set($this->cacheKey,$body['result']['data'] ??null,$this->cacheExp);
+        }
+        
         // print_r($body = json_decode($res, true));
         return $body['result']['data'] ?? null;
     }
