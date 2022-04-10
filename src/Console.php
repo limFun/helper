@@ -17,7 +17,7 @@ class Console
             return;
         }
 
-        echo $method;
+        // echo $method;
         $this->vars = $argv;
 
         try {
@@ -177,6 +177,7 @@ class Console
             default:
                 return;
         }
-        echo ' -> ' . $action . PHP_EOL;
+        // wlog('ws启动');
+        // echo ' -> ' . $action . PHP_EOL;
     }
 }

@@ -14,6 +14,7 @@ function loader($class)
 }
 
 
+
 if (!function_exists('message')) {
     /**
      * @return bool|int
@@ -110,7 +111,7 @@ function loadHelper($dir = null)
             }
 
             if ($file == 'helper.php') {
-                wlog($path);
+                // wlog($path);
                 require_once $path;
             }
         }

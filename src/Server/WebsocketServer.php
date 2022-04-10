@@ -11,22 +11,22 @@ namespace lim\Server;
 
 use function Swoole\Coroutine\Http\get;
 use function Swoole\Coroutine\Http\post;
-use function Swoole\Coroutine\run;
 use Swoole\Coroutine;
 use swoole\Timer;
 
 class WebsocketServer
 {
+    public static $server,$io;
     function __construct($daemonize = false)
     {
         $file = __LIM__ . '/config/websocket.php';
-        
+
         if (!is_file($file)) {
             echo "配置文件不存在\n";
             return;
         }
-        $this->opt = include $file;
-        $this->opt['daemonize']=$daemonize ;
+        $this->opt              = include $file;
+        $this->opt['daemonize'] = $daemonize;
         $this->start();
     }
 
@@ -40,26 +40,28 @@ class WebsocketServer
         Coroutine::set(['enable_deadlock_check' => null, 'hook_flags' => SWOOLE_HOOK_ALL]);
 
         $config = [
-            'reactor_num'        => 1,
-            'enable_coroutine'   => true,
-            'pid_file'           => __LIM__ . '/runtime/websocket.pid',
-            'log_level'          => SWOOLE_LOG_WARNING,
-            'hook_flags'         => SWOOLE_HOOK_ALL,
-            'max_wait_time'      => 1,
-            'reload_async'       => true,
-            'package_max_length' => 5 * 1024 * 1024,
-            'daemonize'          => $this->opt['daemonize'] ?? false,
+            'reactor_num'           => 1,
+            'task_worker_num'       => 1,
+            'task_enable_coroutine' => true,
+            'enable_coroutine'      => true,
+            'pid_file'              => __LIM__ . '/runtime/websocket.pid',
+            'log_level'             => SWOOLE_LOG_WARNING,
+            'hook_flags'            => SWOOLE_HOOK_ALL,
+            'max_wait_time'         => 1,
+            'reload_async'          => true,
+            'package_max_length'    => 5 * 1024 * 1024,
+            'daemonize'             => $this->opt['daemonize'] ?? false,
         ];
 
-        $this->server = new \Swoole\WebSocket\Server("0.0.0.0", $this->opt['port']);
-        $this->server->set($config);
-        $this->server->on('start', fn() => cli_set_process_title($this->opt['name']));
-        $this->server->on('managerstart', [$this, 'managerstart']);
-        $this->server->on('WorkerStart', [$this, 'WorkerStart']);
-        // self::$server->on('task', [$this, 'task']);
-        $this->server->on('request', [$this, 'request']);
-        $this->server->on('message', [$this, 'message']);
-        $this->server->start();
+        self::$server = new \Swoole\WebSocket\Server("0.0.0.0", $this->opt['port']);
+        self::$server->set($config);
+        self::$server->on('start', fn() => cli_set_process_title($this->opt['name']));
+        self::$server->on('managerstart', [$this, 'managerstart']);
+        self::$server->on('WorkerStart', [$this, 'WorkerStart']);
+        self::$server->on('task', [$this, 'task']);
+        self::$server->on('request', [$this, 'request']);
+        self::$server->on('message', [$this, 'message']);
+        self::$server->start();
     }
 
     function request($request, $response)
@@ -75,30 +77,30 @@ class WebsocketServer
 
         $vars = array_merge($request->post ?? [], json_decode($request->getContent(), true) ?? [], $request->get ?? []);
         $path = $request->server['request_uri'];
-    
-        if (!$router = $this->route[$path]??null) {
-            return $response->end(json_encode(['code'=>300,'message'=>'接口不存在'], 256));
+
+        if (!$router = $this->route[$path] ?? null) {
+            return $response->end(json_encode(['code' => 300, 'message' => '接口不存在'], 256));
         }
-       
-        list($app,$method) = $router;
+
+        list($app, $method) = $router;
 
         $res = (new $app())->$method($vars);
-    
+
         return $response->end(json_encode($res, 256));
     }
 
     function managerstart($server)
     {
         cli_set_process_title($this->opt['name'] . '-Manager');
+        $this->loadTasker();
         // wlog ("服务启动成功");
     }
 
     function WorkerStart($server, int $workerId)
     {
 
-
         $file = __LIM__ . '/config/route.php';
-        
+
         if (!is_file($file)) {
             echo "配置文件不存在\n";
             return;
@@ -127,13 +129,36 @@ class WebsocketServer
 
     }
 
-    function task()
+    function message()
     {
 
     }
 
-    function message()
+    public function task($server, $task)
+    {
+        
+        if (isset($task->data['obj'])) {
+            new $task->data['obj'];
+        }
+
+        // print_r($task);
+    }
+
+    private function loadTasker()
     {
 
+        $dir = $dir ?? __LIM__ . "/app/Task";
+        if (is_dir($dir) && $handle = opendir($dir)) {
+            while (($file = readdir($handle)) !== false) {
+                if (($file == ".") || ($file == "..")) {
+                    continue;
+                }
+                $path = $dir . '/' . $file;
+                $obj = '\\app\\Task\\'.strstr($file,'.',true);
+                self::$server->task(['obj' => $obj]);
+
+            }
+            closedir($handle);
+        }
     }
 }
