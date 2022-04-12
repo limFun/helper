@@ -109,6 +109,15 @@ if (!function_exists('rpc')) {
     }
 }
 
+if (!function_exists('kv')) {
+    function kv($service = null, $onlyData = true)
+    {
+        return 1;
+    }
+}
+
+
+
 if (extension_loaded('yac')) {
     lim\Helper\IO::register();
 }

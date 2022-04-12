@@ -25,6 +25,16 @@ class IO
         }
     }
 
+    public function set($value='')
+    {
+        // code...
+    }
+
+    public function get($value='')
+    {
+        // code...
+    }
+
     public function __call($method, $argv)
     {
         // code...
