@@ -4,24 +4,29 @@ spl_autoload_register('loader');
 
 !defined('__LIM__') && define('__LIM__', strstr(__DIR__, '/vendor', true));
 
+
+
 function loader($class)
 {
     $arr  = explode('\\', $class);
     $file = __LIM__ . '/' . implode('/', $arr) . '.php';
     if (is_file($file)) {
         require_once $file;
-    }
+    } 
 }
+
+
 
 if (!function_exists('message')) {
     /**
      * @return bool|int
      */
-    function message($contents, $event = [])
+    function message($contents,$event=[])
     {
-        return new lim\Helper\MessageClient($contents, $event);
+        return new lim\Helper\MessageClient($contents,$event);
     }
 }
+
 
 if (!function_exists('conf')) {
     /**
@@ -45,28 +50,14 @@ if (!function_exists('go')) {
 }
 
 if (!function_exists('wlog')) {
-    function wlog($v = '', $type = 'debug')
+    function wlog($v = '')
     {
-        $color   = ['debug' => '\\e[34m', 'info' => '\\e[32m', 'err' => '\\e[31m'];
-        $v       = is_array($v) ? print_r($v, true) : $v;
-        $content = '\\e[36m[' . date('H:i:s') . '] ' . $color[$type] . str_replace('`', '\`', $v) . PHP_EOL;
-
+        $v   = is_array($v) ? print_r($v,true) : $v;
+        $log = '\\e[36m['.date('H:i:s') . '] \\e[32m' . $v . PHP_EOL;
         if (PHP_SAPI == 'cli') {
-            echo shell_exec('printf "' . $content . '"');
-        }
-    }
-}
+            // echo $log;
 
-if (!function_exists('loger')) {
-    function loger($v = '', $type = 'debug')
-    {
-
-        $color   = ['debug' => '\\e[34m', 'info' => '\\e[32m', 'err' => '\\e[31m'];
-        $v       = is_array($v) ? print_r($v, true) : $v;
-        $content = '\\e[36m[' . date('H:i:s') . '] ' . $color[$type] . str_replace('`', '\`', $v) . PHP_EOL;
-
-        if (PHP_SAPI == 'cli') {
-            echo shell_exec('printf "' . $content . '"');
+            echo shell_exec('printf "'.$log.'"');
         }
     }
 }
@@ -99,9 +90,9 @@ if (!function_exists('proc')) {
 }
 
 if (!function_exists('rpc')) {
-    function rpc($service = null, $onlyData = true)
+    function rpc($service = null,$onlyData=true)
     {
-        return new lim\Helper\Rpclient($service, $onlyData);
+        return new lim\Helper\Rpclient($service,$onlyData);
     }
 }
 
@@ -126,7 +117,7 @@ function loadHelper($dir = null)
             }
 
             if ($file == 'helper.php') {
-                loger('加载' . $path);
+                // wlog($path);
                 require_once $path;
             }
         }

@@ -5,7 +5,7 @@ namespace lim\Server;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-04-08 18:20:12
+ * @Last Modified time: 2022-04-12 11:28:20
  */
 
 use function Swoole\Coroutine\Http\get;
@@ -206,8 +206,8 @@ class Gateway
 
         if ($api = $this->apiList[$path] ?? null) {
             $res = match($api['type']) {
-                'http' => $this->http($api['url'], $vars, $header),
-                'rpc'  => $this->rpc($api['url'], $api['method'], [$vars], $header),
+                'http' => $this->http($api['url'], $data, $header),
+                'rpc'  => $this->rpc($api['url'], $api['method'], [$data], $header),
             default=> [],
             };
 
