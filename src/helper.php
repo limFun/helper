@@ -47,13 +47,7 @@ if (!function_exists('go')) {
 if (!function_exists('wlog')) {
     function wlog($v = '', $type = 'debug')
     {
-        $color   = ['debug' => '\\e[34m', 'info' => '\\e[32m', 'err' => '\\e[31m'];
-        $v       = is_array($v) ? print_r($v, true) : $v;
-        $content = '\\e[36m[' . date('H:i:s') . '] ' . $color[$type] . str_replace('`', '\`', $v) . PHP_EOL;
-
-        if (PHP_SAPI == 'cli') {
-            echo shell_exec('printf "' . $content . '"');
-        }
+        loger($v,$type);
     }
 }
 
@@ -62,7 +56,7 @@ if (!function_exists('loger')) {
     {
 
         $color   = ['debug' => '\\e[34m', 'info' => '\\e[32m', 'err' => '\\e[31m'];
-        $v       = is_array($v) ? print_r($v, true) : $v;
+        $v       = is_array($v) ? print_r($v, true) : (string)$v;
         $content = '\\e[36m[' . date('H:i:s') . '] ' . $color[$type] . str_replace('`', '\`', $v) . PHP_EOL;
 
         if (PHP_SAPI == 'cli') {
