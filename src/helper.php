@@ -4,29 +4,24 @@ spl_autoload_register('loader');
 
 !defined('__LIM__') && define('__LIM__', strstr(__DIR__, '/vendor', true));
 
-
-
 function loader($class)
 {
     $arr  = explode('\\', $class);
     $file = __LIM__ . '/' . implode('/', $arr) . '.php';
     if (is_file($file)) {
         require_once $file;
-    } 
+    }
 }
-
-
 
 if (!function_exists('message')) {
     /**
      * @return bool|int
      */
-    function message($contents,$event=[])
+    function message($contents, $event = [])
     {
-        return new lim\Helper\MessageClient($contents,$event);
+        return new lim\Helper\MessageClient($contents, $event);
     }
 }
-
 
 if (!function_exists('conf')) {
     /**
@@ -76,6 +71,16 @@ if (!function_exists('loger')) {
     }
 }
 
+if (!function_exists('tu')) {
+    function tu($fn, $value = '')
+    {
+        $s = microtime(true);
+        $fn();
+        $u = intval((microtime(true) - $s) * 1000);
+        loger($value . '耗时:' . $u . '毫秒', 'info');
+    }
+}
+
 if (!function_exists('env')) {
     function env($key = null, $value = 'SSS')
     {
@@ -104,9 +109,9 @@ if (!function_exists('proc')) {
 }
 
 if (!function_exists('rpc')) {
-    function rpc($service = null,$onlyData=true)
+    function rpc($service = null, $onlyData = true)
     {
-        return new lim\Helper\Rpclient($service,$onlyData);
+        return new lim\Helper\Rpclient($service, $onlyData);
     }
 }
 
