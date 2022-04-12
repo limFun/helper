@@ -50,14 +50,28 @@ if (!function_exists('go')) {
 }
 
 if (!function_exists('wlog')) {
-    function wlog($v = '')
+    function wlog($v = '', $type = 'debug')
     {
-        $v   = is_array($v) ? print_r($v,true) : $v;
-        $log = '\\e[36m['.date('H:i:s') . '] \\e[32m' . $v . PHP_EOL;
-        if (PHP_SAPI == 'cli') {
-            // echo $log;
+        $color   = ['debug' => '\\e[34m', 'info' => '\\e[32m', 'err' => '\\e[31m'];
+        $v       = is_array($v) ? print_r($v, true) : $v;
+        $content = '\\e[36m[' . date('H:i:s') . '] ' . $color[$type] . str_replace('`', '\`', $v) . PHP_EOL;
 
-            echo shell_exec('printf "'.$log.'"');
+        if (PHP_SAPI == 'cli') {
+            echo shell_exec('printf "' . $content . '"');
+        }
+    }
+}
+
+if (!function_exists('loger')) {
+    function loger($v = '', $type = 'debug')
+    {
+
+        $color   = ['debug' => '\\e[34m', 'info' => '\\e[32m', 'err' => '\\e[31m'];
+        $v       = is_array($v) ? print_r($v, true) : $v;
+        $content = '\\e[36m[' . date('H:i:s') . '] ' . $color[$type] . str_replace('`', '\`', $v) . PHP_EOL;
+
+        if (PHP_SAPI == 'cli') {
+            echo shell_exec('printf "' . $content . '"');
         }
     }
 }
