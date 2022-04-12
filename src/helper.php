@@ -96,7 +96,9 @@ if (!function_exists('rpc')) {
     }
 }
 
-lim\Helper\IO::register();
+if (extension_loaded('yac')) {
+    lim\Helper\IO::register();
+}
 
 loadHelper();
 
