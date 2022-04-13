@@ -13,6 +13,44 @@ function loader($class)
     }
 }
 
+
+
+function hfConfiger($configer)
+{
+    $dir = __LIM__ . "/app/Service";
+    if (is_dir($dir) && $handle = opendir($dir)) {
+        while (($file = readdir($handle)) !== false) {
+            if (($file == ".") || ($file == "..")) {
+                continue;
+            }
+
+            $configDir = $dir . '/' . $file.'/config/config.php';
+            $ruleDir = $dir . '/' . $file.'/config/rule.php';
+            $databaseDir = $dir . '/' . $file.'/config/database.php';
+            if (is_file($configDir)) {
+                $config = include $configDir;
+                $configer->set(strtolower($file),$config);
+            }
+
+            if (is_file($ruleDir)) {
+                $rule = include $ruleDir;
+                $configer->set('rule.'.strtolower($file),$rule);
+            }
+
+            if (is_file($databaseDir)) {
+                $database = include $databaseDir;
+                $key = 'databases.'.strtolower($file);
+                if (!$configer->has($key)) {
+                    $configer->set($key,$database);
+                }
+            }
+        }
+        closedir($handle);
+    }
+    // loger($this->config->get('databases'));
+    // loger('加载配置');
+}
+
 if (!function_exists('message')) {
     /**
      * @return bool|int
