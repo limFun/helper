@@ -5,7 +5,7 @@ namespace lim;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-04-07 14:27:44
+ * @Last Modified time: 2022-04-13 12:09:53
  */
 
 class Console
@@ -23,9 +23,9 @@ class Console
         try {
             $this->$method();
         } catch (\Error $e) {
-            print_r($e);
+            loger((array)$e,'err');
         } catch (\Swoole\ExitException $e) {
-            print_r($e);
+            loger((array)$e,'err');
         }
 
     }
@@ -118,6 +118,15 @@ class Console
     {
         $fn = array_shift($this->vars);
         $fn(...$this->vars);
+    }
+
+    public function obj()
+    {
+    
+        $fn = array_shift($this->vars);
+
+        objRun($fn,...$this->vars);
+
     }
 
     public function git()

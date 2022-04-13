@@ -47,7 +47,7 @@ if (!function_exists('go')) {
 if (!function_exists('wlog')) {
     function wlog($v = '', $type = 'debug')
     {
-        loger($v,$type);
+        loger($v, $type);
     }
 }
 
@@ -55,10 +55,18 @@ if (!function_exists('loger')) {
     function loger($v = '', $type = 'debug')
     {
 
-        $color   = ['debug' => '\\e[34m', 'info' => '\\e[32m', 'err' => '\\e[31m'];
-        $v       = is_array($v) ? print_r($v, true) : (string)$v;
-        $content = '\\e[36m[' . date('H:i:s') . '] ' . $color[$type] . str_replace('`', '\`', $v) . PHP_EOL;
+        $color   = ['debug' => '\\e[33m', 'info' => '\\e[32m', 'err' => '\\e[31m'];
+        
+        if (is_array($v)) {
+            $v = print_r((array)$v, true);
+        } 
 
+        if (is_object($v)) {
+            $v =  print_r((object)$v,true);
+        } 
+
+        $content = '\\e[36m[' . date('H:i:s') . '] ' . $color[$type] . str_replace('`', '\`', (string)$v) . PHP_EOL;
+       
         if (PHP_SAPI == 'cli') {
             echo shell_exec('printf "' . $content . '"');
         }
@@ -81,6 +89,8 @@ if (!function_exists('env')) {
         if (!is_file(__LIM__ . '/.env')) {
             return $value;
         }
+
+        print_r(parse_ini_file(__LIM__ . '/.env', true));
         return parse_ini_file(__LIM__ . '/.env', true)[$key] ?? $value;
     }
 }
@@ -116,7 +126,43 @@ if (!function_exists('kv')) {
     }
 }
 
+if (!function_exists('objRun')) {
+//运行对象或对象方法
+    function objRun($obj = '', ...$opt)
+    {
+        $obj = explode(':', $obj);
 
+        if (!$class = $obj[0] ?? null) {
+            exit('obj 空');
+        }
+
+        $class = '\\' . str_replace('.', '\\', $class);
+        // wlog([$class,$opt,$obj[1]]);
+        try {
+            //判断是否有方法
+            if (!$method = $obj[1] ?? null) {
+                new $class(...$opt);
+                return;
+            }
+
+            //判断方法是否存在
+            if (!method_exists($class, $method)) {
+                loger($class . ' ' . $method . ' 方法不存在','err');
+                return;
+            }
+
+            //判断静态方法
+            if ((new \ReflectionMethod($class, $method))->isStatic()) {
+                $class::$method(...$opt);
+            } else {
+                (new $class)->$method(...$opt);
+            }
+
+        } catch (\Swoole\ExitException $e) {
+            loger($e->getStatus(),'err');
+        }
+    }
+}
 
 if (extension_loaded('yac')) {
     lim\Helper\IO::register();

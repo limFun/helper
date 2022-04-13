@@ -5,7 +5,7 @@ namespace lim\Helper;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-04-06 19:42:01
+ * @Last Modified time: 2022-04-13 12:05:15
  */
 
 class Console
@@ -23,9 +23,9 @@ class Console
         try {
             $this->$method();
         } catch (\Error $e) {
-            print_r($e);
+            loger($e,'err');
         } catch (\Swoole\ExitException $e) {
-            print_r($e);
+            loger($e,'err');
         }
 
     }
