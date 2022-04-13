@@ -8,35 +8,42 @@ namespace lim\Helper;
  * @Last Modified time: 2022-04-13 12:26:52
  */
 
-class IO
+class io
 {
-    public static $io = null;
+    static $ios=[];
 
-    public function __construct($argv)
+    public function __construct($name=null)
     {
-
+        if ($name && isset(self::$ios[$name])) {
+            $this->io = self::$ios[$name];
+        }
+        // $this->io = self::$ios[$name];
+        return $this;
     }
 
-    public static function register()
+    public  function register($name='',$size=100,$cols='')
     {
-        // if (!self::$io) {
-        //     self::$io = new \Yac(__LIM__);
-        //     wlog('init io');
-        // }
+        $this->io = swoole_table($size, $cols);
+        self::$ios[$name]= $this->io;
+        loger(self::$ios);
+        return $this;
     }
 
-    public function set($value='')
+    public function id($value='')
     {
-        // code...
+        $this->id = $value;
+        return $this;
+    }
+
+    public function set($key='',$value)
+    {
+        $this->io->set($this->id,['id'=>$this->id,$key=>$value]);
+        return $this;
     }
 
     public function get($value='')
     {
-        // code...
-    }
-
-    public function __call($method, $argv)
-    {
-        // code...
+        $res = $this->io->get($this->id);
+        return $res;
     }
 }

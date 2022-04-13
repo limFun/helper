@@ -13,6 +13,18 @@ function loader($class)
     }
 }
 
+// if (!function_exists('io')) {
+//     /**
+//      * @return bool|int
+//      */
+//     function io($name=null)
+//     {
+//         $io = swoole_table(50, 'id:i,roomStatus:i,wsStatus:i,dmStatus:i');
+//         return new lim\Helper\io($name);
+//     }
+// }
+
+
 
 
 function hfConfiger($configer)
@@ -61,6 +73,7 @@ if (!function_exists('message')) {
     }
 }
 
+
 if (!function_exists('conf')) {
     /**
      * @return bool|int
@@ -102,6 +115,7 @@ if (!function_exists('loger')) {
         if (is_object($v)) {
             $v =  print_r((object)$v,true);
         } 
+
 
         $content = '\\e[36m[' . date('H:i:s') . '] ' . $color[$type] . str_replace('`', '\`', (string)$v) . PHP_EOL;
        
@@ -202,9 +216,6 @@ if (!function_exists('objRun')) {
     }
 }
 
-if (extension_loaded('yac')) {
-    lim\Helper\IO::register();
-}
 
 loadHelper();
 
