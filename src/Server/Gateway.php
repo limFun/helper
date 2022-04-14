@@ -5,7 +5,7 @@ namespace lim\Server;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-04-12 11:28:20
+ * @Last Modified time: 2022-04-14 13:30:55
  */
 
 use function Swoole\Coroutine\Http\get;
@@ -13,6 +13,8 @@ use function Swoole\Coroutine\Http\post;
 use function Swoole\Coroutine\run;
 use Swoole\Coroutine\Http\Client\Exception;
 use \swoole\Timer;
+
+use Swoole\Coroutine\Http\Client;
 
 class Gateway
 {
@@ -146,6 +148,8 @@ class Gateway
             return;
         }
 
+        $this->req = $request;
+
         $result = $this->parseReq($request);
         return $response->end($result);
     }
@@ -177,6 +181,7 @@ class Gateway
             $header               = array_merge($tmp, ['fd' => $req->fd]);
             $this->request_method = 'POST';
         } else {
+
             if (!$post = json_decode($req->getContent(), true)) {
                 $post = $req->post ?? [];
             }
@@ -229,6 +234,28 @@ class Gateway
 
     private function http($url, $params, $headers = [])
     {
+            // loger($this->req);
+
+            // $client = new Client('oa-dev.413club.cn', 80);
+
+            // $client->setHeaders($headers);
+            // foreach ($this->req->files as $key => $value) {
+            //     $client->addFile($value['tmp_name'], $key);
+            //     loger($value);
+            // }
+
+            // // if (is_file('/code/1.csv')) {
+            // //     $client->addFile('/code/1.csv', 'file','form-data');
+            // //     loger('file');
+            // // }
+            
+            
+            // $client->post('/inside/upload/agency_file',$params);
+            // loger($client);
+            // loger(json_decode($client->body,true));
+            
+            // $client->close();
+            // return;
         try {
             if ($this->request_method == 'GET') {
                 $res = get($url . '?' . http_build_query($params), null, $headers);

@@ -106,7 +106,10 @@ class Rpclient
 
         if ($this->node['type'] == 'http') {
             // $res  = post($this->node['url'], json_encode($options, 256))->getBody();
-            $res  = $this->curlPost($this->node['url'], json_encode($options, 256));
+            if (!$res  = $this->curlPost($this->node['url'], json_encode($options, 256))) {
+                return ['code'=>-1,'message'=>'服务未开启'];
+            };
+            
             $body = json_decode($res, true);
         }
 
@@ -114,9 +117,6 @@ class Rpclient
             return $body['error'];
         }
 
-        if (isset($this->cacheKey)) {
-            \lim\Helper\IO::$io->set($this->cacheKey,$body['result']['data'] ??null,$this->cacheExp);
-        }
         
         // print_r($body = json_decode($res, true));
         return $body['result']['data'] ?? null;
