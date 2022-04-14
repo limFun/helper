@@ -11,7 +11,7 @@ class Rpclient
 
     private $name = null, $headers = [], $port = null;
 
-    public $message = null;
+    public $message = null,$data=null;
     public function __construct($name, $onlyData)
     {
         $this->onlyData = $onlyData;
@@ -119,7 +119,7 @@ class Rpclient
 
         
         // print_r($body = json_decode($res, true));
-        return $body['result']['data'] ?? null;
+        return (object)$body['result'];
     }
 
     public function curlPost($url, $post_data = array(), $header = "")
