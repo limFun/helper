@@ -4,6 +4,34 @@ spl_autoload_register('loader');
 
 !defined('__LIM__') && define('__LIM__', strstr(__DIR__, '/vendor', true));
 
+loadHelper();
+
+if (!function_exists('loger')) {
+    function loger($v = '', $type = 'debug')
+    {
+
+        $color   = ['debug' => '\\e[33m', 'info' => '\\e[32m', 'err' => '\\e[31m'];
+        
+        if (is_array($v)) {
+            $v = print_r((array)$v, true);
+        } 
+
+        if (is_object($v)) {
+            $v =  print_r((object)$v,true);
+        } 
+
+
+        $content = '\\e[36m[' . date('H:i:s') . '] ' . $color[$type] . str_replace('`', '\`', (string)$v) . PHP_EOL;
+       
+        if (PHP_SAPI == 'cli') {
+            echo shell_exec('printf "' . $content . '"');
+        }
+    }
+}
+
+
+
+
 function loader($class)
 {
     $arr  = explode('\\', $class);
@@ -12,19 +40,6 @@ function loader($class)
         require_once $file;
     }
 }
-
-// if (!function_exists('io')) {
-//     /**
-//      * @return bool|int
-//      */
-//     function io($name=null)
-//     {
-//         $io = swoole_table(50, 'id:i,roomStatus:i,wsStatus:i,dmStatus:i');
-//         return new lim\Helper\io($name);
-//     }
-// }
-
-
 
 
 function hfConfiger($configer)
@@ -74,13 +89,31 @@ if (!function_exists('message')) {
 }
 
 
-if (!function_exists('conf')) {
+if (!function_exists('config')) {
     /**
      * @return bool|int
      */
-    function conf($key = '', $value = '')
+    function config($key = '')
     {
-        return ['name' => 'sas', 'port' => 9875];
+
+        $c = \lim\Helper\Env::$config;
+
+        if (!$key) {
+            return $c;
+        }
+
+        $arr = explode('.', $key);
+ 
+
+        foreach ($arr as $k => $v) {
+            if (!isset($c[$v])) {
+                return null;
+            }
+            $c = $c[$v];
+        }
+
+        return $c;
+
     }
 }
 
@@ -102,28 +135,7 @@ if (!function_exists('wlog')) {
     }
 }
 
-if (!function_exists('loger')) {
-    function loger($v = '', $type = 'debug')
-    {
 
-        $color   = ['debug' => '\\e[33m', 'info' => '\\e[32m', 'err' => '\\e[31m'];
-        
-        if (is_array($v)) {
-            $v = print_r((array)$v, true);
-        } 
-
-        if (is_object($v)) {
-            $v =  print_r((object)$v,true);
-        } 
-
-
-        $content = '\\e[36m[' . date('H:i:s') . '] ' . $color[$type] . str_replace('`', '\`', (string)$v) . PHP_EOL;
-       
-        if (PHP_SAPI == 'cli') {
-            echo shell_exec('printf "' . $content . '"');
-        }
-    }
-}
 
 if (!function_exists('tu')) {
     function tu($fn, $value = '')
@@ -142,7 +154,7 @@ if (!function_exists('env')) {
             return $value;
         }
 
-        print_r(parse_ini_file(__LIM__ . '/.env', true));
+        // print_r(parse_ini_file(__LIM__ . '/.env', true));
         return parse_ini_file(__LIM__ . '/.env', true)[$key] ?? $value;
     }
 }
@@ -217,7 +229,7 @@ if (!function_exists('objRun')) {
 }
 
 
-loadHelper();
+
 
 function loadHelper($dir = null)
 {
@@ -243,3 +255,6 @@ function loadHelper($dir = null)
         closedir($handle);
     }
 }
+
+
+lim\Helper\Env::initConfig();

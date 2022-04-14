@@ -15,12 +15,8 @@ class Rpclient
     public function __construct($name, $onlyData)
     {
         $this->onlyData = $onlyData;
-        $f              = __LIM__ . '/config/gateway.php';
-        if (!is_file($f)) {
-            $this->message = '配置文件不存在';
-            return $this;
-        }
-        $ser = include $f;
+        
+        $ser = config('gateway');
 
         foreach ($ser['service']['rpc'] as $k => $v) {
             list($type, $url) = explode('://', $v['url']);
