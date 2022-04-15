@@ -5,7 +5,7 @@ namespace lim;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-04-13 12:09:53
+ * @Last Modified time: 2022-04-15 10:31:47
  */
 
 class Console
@@ -45,7 +45,7 @@ class Console
         return $env;
     }
 
-    public function self()
+    public function selfer()
     {
         $to   = dirname(__LIM__) . '/helper';
         $sync = 'cp -r ' . __DIR__ . ' ' . $to . ' && cd ' . $to . ' && sudo git add . && sudo git commit -m \'' . time() . '\' && sudo git push';

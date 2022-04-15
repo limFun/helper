@@ -6,8 +6,23 @@ class Env
 
     static $config = [];
 
+    // public static function fn()
+    // {
+    //     // code...
+    // }
+
     public static function initConfig($dir=null)
     {
+        $f = __LIM__.'/composer.json';
+        $name='phplim/helper';
+        if (is_file($f)) {
+            $name = json_decode(file_get_contents($f),true)['name']??null;
+        }
+
+        if ($name!='phplim/helper') {
+            return;
+        }
+        
         $dir = $dir ?? __LIM__ . "/config";
         if (is_dir($dir) && $handle = opendir($dir)) {
             while (($file = readdir($handle)) !== false) {
