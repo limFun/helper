@@ -74,6 +74,7 @@ function hfConfiger($configer)
         }
         closedir($handle);
     }
+
     // loger($this->config->get('databases'));
     // loger('加载配置');
 }

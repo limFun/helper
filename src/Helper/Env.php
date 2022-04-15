@@ -13,6 +13,7 @@ class Env
 
     public static function initConfig($dir=null)
     {
+
         $f = __LIM__.'/composer.json';
         $name='phplim/helper';
         if (is_file($f)) {
@@ -20,6 +21,7 @@ class Env
         }
 
         if ($name!='phplim/helper') {
+           
             return;
         }
         

@@ -18,7 +18,8 @@ class Rpclient
         
         $ser = config('gateway');
 
-        foreach ($ser['service']['rpc'] as $k => $v) {
+       
+        foreach ($ser['service']['rpc']??[] as $k => $v) {
             list($type, $url) = explode('://', $v['url']);
             $this->rpc[$k]    = match($type) {
                 'http' => ['type' => $type, 'url' => $v['url']],
@@ -28,7 +29,6 @@ class Rpclient
         }
 
         if (!$this->node = $this->rpc[$name] ?? null) {
-            echo $name . "服务不存在";
             $this->message = $name . '服务不存在';
             return $this;
         }
@@ -59,14 +59,6 @@ class Rpclient
 
     public function parse($method, $params)
     {
-        if (isset($this->cacheKey)) {
-            $cache = \lim\Helper\IO::$io->get($this->cacheKey);
-            
-            if ($cache!==false) {
-                wlog('get cache');
-                return $cache;
-            }
-        }
 
         if ($this->message) {
             return ['code' => -1, 'message' => $this->message];
