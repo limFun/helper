@@ -20,8 +20,9 @@ if (!function_exists('loger')) {
             $v =  print_r((object)$v,true);
         } 
 
-
-        $content = '\\e[36m[' . date('H:i:s') . '] ' . $color[$type] . str_replace('`', '\`', (string)$v) . PHP_EOL;
+        $v = str_replace('`', '\`', (string)$v);
+      
+        $content = '\\e[36m[' . date('H:i:s') . '] ' . $color[$type] . $v . PHP_EOL;
        
         if (PHP_SAPI == 'cli') {
             echo shell_exec('printf "' . $content . '"');

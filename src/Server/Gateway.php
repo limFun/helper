@@ -5,7 +5,7 @@ namespace lim\Server;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-04-14 13:30:55
+ * @Last Modified time: 2022-04-18 10:08:41
  */
 
 use function Swoole\Coroutine\Http\get;
@@ -23,14 +23,15 @@ class Gateway
 
     function __construct($daemonize = false)
     {
-        $file = __LIM__ . '/config/gateway.php';
+        // $file = __LIM__ . '/config/gateway.php';
 
-        if (!is_file($file)) {
-            echo "配置文件不存在\n";
-            return;
-        }
+        // if (!is_file($file)) {
+        //     echo "配置文件不存在\n";
+        //     return;
+        // }
 
-        $opt = include $file;
+
+        $opt = config('gateway');
         $this->widthOption($opt);
         $this->run($daemonize);
     }
