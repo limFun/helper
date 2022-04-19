@@ -44,6 +44,12 @@ class Rpclient
         return $this;
     }
 
+    public function user($user)
+    {
+        $this->user = $user;
+        return $this;
+    }
+
     public function number($number)
     {
         $this->number = $number;
@@ -78,6 +84,10 @@ class Rpclient
 
         if (isset($this->number)) {
             $options['number'] = $this->number;
+        }
+
+        if (isset($this->user)) {
+            $options['user'] = $this->user;
         }
 
         if ($this->node['type'] == 'tcp') {
