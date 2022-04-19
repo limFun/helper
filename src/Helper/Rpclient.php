@@ -44,9 +44,9 @@ class Rpclient
         return $this;
     }
 
-    public function member($member)
+    public function number($number)
     {
-        $this->member = $member;
+        $this->number = $number;
         return $this;
     }
 
@@ -76,8 +76,8 @@ class Rpclient
             $options['authorization'] = $this->auth;
         }
 
-        if (isset($this->member)) {
-            $options['member'] = $this->member;
+        if (isset($this->number)) {
+            $options['number'] = $this->number;
         }
 
         if ($this->node['type'] == 'tcp') {
