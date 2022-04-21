@@ -4,7 +4,7 @@ spl_autoload_register('loader');
 
 !defined('__LIM__') && define('__LIM__', strstr(__DIR__, '/vendor', true));
 
-loadHelper();
+
 
 if (!function_exists('loger')) {
     function loger($v = '', $type = 'debug')
@@ -31,7 +31,7 @@ if (!function_exists('loger')) {
 }
 
 
-
+loadHelper();
 
 function loader($class)
 {
