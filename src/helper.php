@@ -31,7 +31,7 @@ if (!function_exists('loger')) {
 }
 
 
-loadHelper();
+
 
 function loader($class)
 {
@@ -42,6 +42,7 @@ function loader($class)
     }
 }
 
+loadHelper();
 
 function hfConfiger($configer)
 {
@@ -257,6 +258,8 @@ function loadHelper($dir = null)
         closedir($handle);
     }
 }
+
+
 
 
 lim\Helper\Env::initConfig();

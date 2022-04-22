@@ -5,7 +5,7 @@ namespace lim;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-04-15 10:31:47
+ * @Last Modified time: 2022-04-22 10:02:22
  */
 
 class Console
@@ -54,40 +54,17 @@ class Console
         shell_exec($sync);
     }
 
-    public function app()
+    public function stop()
     {
-
-        $action = implode(' ', $this->vars);
-        $descriptorspec = [
-                    0 => STDIN,
-                    1 => STDOUT,
-                    2 => STDERR,
-                ];
-        switch ($this->env()) {
-            case 'hyperf':
-                $script = "sudo php ".__LIM__."/bin/hyperf.php ".$action;
-                echo $script.PHP_EOL;
-                proc_open($script,$descriptorspec,$pipes);
-                break;
-            case 'laravel':
-                $script = "sudo php ".__LIM__."/bin/laravels ".$action;
-                echo $script.PHP_EOL;
-                proc_open($script,$descriptorspec,$pipes);
+        $app = array_shift($this->vars);
+        switch ($app) {
+            case 'hf':
+                $pid = file_get_contents(__LIM__.'/runtime/hyperf.pid');
+                echo shell_exec('sudo kill -15 ' . $pid);
                 break;
             default:
-                // code...
-                break;
+                return;
         }
-        return;
-        switch ($action) {
-            case 'watch':
-                    echo $this->env();
-                    // echo $script = "sudo php ".__LIM__."/bin/hyperf.php start";
-                    // shell_exec($script);
-                break;
-
-        }
-
     }
 
     public function scan($dir = null,&$argv=[])
