@@ -21,17 +21,22 @@ if (!function_exists('loger')) {
         } 
 
         $v = str_replace('`', '\`', (string)$v);
+        // $v = str_replace('%', '\%', (string)$v);
       
-        $content = '\\e[36m[' . date('H:i:s') . '] ' . $color[$type] . $v . PHP_EOL;
-       
+        // $content = '\\e[36m[' . date('H:i:s') . '] ' . $color[$type] . $v . PHP_EOL;
+
+        $content = '\\033[36m[' . date('H:i:s') . '] ' . $color[$type] . $v ;
+
+        
         if (PHP_SAPI == 'cli') {
-            echo shell_exec('printf "' . $content . '"');
+            echo shell_exec('echo -e "' . $content . '"');
+            // echo shell_exec('printf "' . $content . '"');
         }
     }
 }
 
 
-
+loadHelper();
 
 function loader($class)
 {
@@ -42,7 +47,6 @@ function loader($class)
     }
 }
 
-loadHelper();
 
 function hfConfiger($configer)
 {
@@ -258,8 +262,6 @@ function loadHelper($dir = null)
         closedir($handle);
     }
 }
-
-
 
 
 lim\Helper\Env::initConfig();
