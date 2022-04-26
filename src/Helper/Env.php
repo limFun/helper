@@ -15,13 +15,12 @@ class Env
     {
 
         $f = __LIM__.'/composer.json';
-        $name='phplim/helper';
+        $name=null;
         if (is_file($f)) {
             $name = json_decode(file_get_contents($f),true)['name']??null;
         }
-
-        if ($name!='phplim/helper') {
-           
+  
+        if ($name) {
             return;
         }
         
