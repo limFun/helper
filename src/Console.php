@@ -5,7 +5,7 @@ namespace lim;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-04-22 10:02:22
+ * @Last Modified time: 2022-04-26 20:13:36
  */
 
 class Console
@@ -38,8 +38,8 @@ class Console
                 $act    = array_shift($this->vars);
                 $script = match($act) {
                     'init' => 'sudo git config --global credential.helper store',
-                    'log'=>'sudo git log',
-                    'reset' => "sudo git reset ".(array_shift($this->vars) ?? '--hard HEAD^'),
+                    'log' => 'sudo git log',
+                    'reset' => "sudo git reset " . (array_shift($this->vars) ?? '--hard HEAD^'),
                     'pull' => "sudo git pull",
                     'add' => "sudo git add " . (array_shift($this->vars) ?? '.'),
                     'commit' => "sudo git commit -m '" . array_shift($this->vars) . "'",
@@ -47,6 +47,7 @@ class Console
                     '-dl' => 'sudo git branch -d ' . array_shift($this->vars),
                     '-dr' => 'sudo git push origin --delete ' . array_shift($this->vars),
                     'pusher' => $this->gitpusher(),
+                    'limer' => $this->selfer(),
                 default=> null,
                 };
 
@@ -87,11 +88,8 @@ class Console
 
     public function selfer()
     {
-        $to   = dirname(__LIM__) . '/helper';
-        $sync = 'cp -r ' . __DIR__ . ' ' . $to . ' && cd ' . $to . ' && sudo git add . && sudo git commit -m \'' . time() . '\' && sudo git push';
-        // $sync = 'cp -r ' . __DIR__ . ' ' . $to ;
-        wlog($sync);
-        shell_exec($sync);
+        $to          = dirname(__LIM__) . '/helper';
+        return $sync = 'cp -r ' . __DIR__ . ' ' . $to . ' && cd ' . $to . ' && sudo git add . && sudo git commit -m \'' . time() . '\' && sudo git push';
     }
 
     public function stop()

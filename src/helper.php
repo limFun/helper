@@ -7,7 +7,7 @@ spl_autoload_register('loader');
 
 
 if (!function_exists('loger')) {
-    function loger($v = '', $type = 'debug')
+    function loger($v = '', $type = 'debug',$file=null)
     {
 
         $color   = ['debug' => '\\e[33m', 'info' => '\\e[32m', 'err' => '\\e[31m'];
@@ -18,19 +18,19 @@ if (!function_exists('loger')) {
 
         if (is_object($v)) {
             $v =  print_r((object)$v,true);
-        } 
+        }
 
         $v = str_replace('`', '\`', (string)$v);
-        // $v = str_replace('%', '\%', (string)$v);
-      
-        // $content = '\\e[36m[' . date('H:i:s') . '] ' . $color[$type] . $v . PHP_EOL;
 
+        if ($file) {
+            file_put_contents(__LIM__.'/runtime/logs/'.$file, date('Y-m-d H:i:s').' '.$v.PHP_EOL,FILE_APPEND);
+        }
+   
         $content = '\\033[36m[' . date('H:i:s') . '] ' . $color[$type] . $v ;
 
         
         if (PHP_SAPI == 'cli') {
             echo shell_exec('echo -e "' . $content . '"');
-            // echo shell_exec('printf "' . $content . '"');
         }
     }
 }
