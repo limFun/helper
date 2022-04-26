@@ -4,37 +4,27 @@ spl_autoload_register('loader');
 
 !defined('__LIM__') && define('__LIM__', strstr(__DIR__, '/vendor', true));
 
-
-
 if (!function_exists('loger')) {
-    function loger($v = '', $type = 'debug',$file=null)
+    function loger($v = '', $type = 'debug', $file = null)
     {
 
-        $color   = ['debug' => '\\e[33m', 'info' => '\\e[32m', 'err' => '\\e[31m'];
-        
-        if (is_array($v)) {
-            $v = print_r((array)$v, true);
-        } 
+        $color = ['debug' => '\\e[33m', 'info' => '\\e[32m', 'err' => '\\e[31m'];
 
-        if (is_object($v)) {
-            $v =  print_r((object)$v,true);
+        if (is_array($v) || is_object($v)) {
+            $v = print_r($v, true);
+
         }
-
-        $v = str_replace('`', '\`', (string)$v);
-
+        
         if ($file) {
-            file_put_contents(__LIM__.'/runtime/logs/'.$file, date('Y-m-d H:i:s').' '.$v.PHP_EOL,FILE_APPEND);
+            file_put_contents(__LIM__ . '/runtime/logs/' . $file, date('Y-m-d H:i:s') . ' ' . $v . PHP_EOL, FILE_APPEND);
         }
-   
-        $content = '\\033[36m[' . date('H:i:s') . '] ' . $color[$type] . $v ;
 
-        
+        $str = '\\033[36m[' . date('H:i:s') . '] ' . $color[$type];
         if (PHP_SAPI == 'cli') {
-            echo shell_exec('echo -e "' . $content . '"');
+            echo shell_exec('echo -e -n "' . $str . '"') . $v . PHP_EOL;
         }
     }
 }
-
 
 loadHelper();
 
@@ -47,7 +37,6 @@ function loader($class)
     }
 }
 
-
 function hfConfiger($configer)
 {
     $dir = __LIM__ . "/app/Service";
@@ -57,24 +46,24 @@ function hfConfiger($configer)
                 continue;
             }
 
-            $configDir = $dir . '/' . $file.'/config/config.php';
-            $ruleDir = $dir . '/' . $file.'/config/rule.php';
-            $databaseDir = $dir . '/' . $file.'/config/database.php';
+            $configDir   = $dir . '/' . $file . '/config/config.php';
+            $ruleDir     = $dir . '/' . $file . '/config/rule.php';
+            $databaseDir = $dir . '/' . $file . '/config/database.php';
             if (is_file($configDir)) {
                 $config = include $configDir;
-                $configer->set(strtolower($file),$config);
+                $configer->set(strtolower($file), $config);
             }
 
             if (is_file($ruleDir)) {
                 $rule = include $ruleDir;
-                $configer->set('rule.'.strtolower($file),$rule);
+                $configer->set('rule.' . strtolower($file), $rule);
             }
 
             if (is_file($databaseDir)) {
                 $database = include $databaseDir;
-                $key = 'databases.'.strtolower($file);
+                $key      = 'databases.' . strtolower($file);
                 if (!$configer->has($key)) {
-                    $configer->set($key,$database);
+                    $configer->set($key, $database);
                 }
             }
         }
@@ -95,7 +84,6 @@ if (!function_exists('message')) {
     }
 }
 
-
 if (!function_exists('config')) {
     /**
      * @return bool|int
@@ -110,7 +98,6 @@ if (!function_exists('config')) {
         }
 
         $arr = explode('.', $key);
- 
 
         foreach ($arr as $k => $v) {
             if (!isset($c[$v])) {
@@ -141,8 +128,6 @@ if (!function_exists('wlog')) {
         loger($v, $type);
     }
 }
-
-
 
 if (!function_exists('tu')) {
     function tu($fn, $value = '')
@@ -218,7 +203,7 @@ if (!function_exists('objRun')) {
 
             //判断方法是否存在
             if (!method_exists($class, $method)) {
-                loger($class . ' ' . $method . ' 方法不存在','err');
+                loger($class . ' ' . $method . ' 方法不存在', 'err');
                 return;
             }
 
@@ -230,13 +215,10 @@ if (!function_exists('objRun')) {
             }
 
         } catch (\Swoole\ExitException $e) {
-            loger($e->getStatus(),'err');
+            loger($e->getStatus(), 'err');
         }
     }
 }
-
-
-
 
 function loadHelper($dir = null)
 {
@@ -262,6 +244,5 @@ function loadHelper($dir = null)
         closedir($handle);
     }
 }
-
 
 lim\Helper\Env::initConfig();
