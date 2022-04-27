@@ -26,6 +26,23 @@ if (!function_exists('loger')) {
     }
 }
 
+if (!function_exists('echox')) {
+    function echox($v = '', $type = 'debug')
+    {
+
+        $color = ['debug' => '\\e[33m', 'info' => '\\e[32m', 'err' => '\\e[31m'];
+
+        if (is_array($v) || is_object($v)) {
+            $v = print_r($v, true);
+
+        }
+        
+        $str = '\\033[' . $color[$type];
+        echo shell_exec('echo -e -n "' . $str . '"') . $v . PHP_EOL;
+    }
+}
+
+
 loadHelper();
 
 function loader($class)
