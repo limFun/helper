@@ -131,16 +131,27 @@ class Console
 
     public function fnc()
     {
-        $fn = array_shift($this->vars);
-        $fn(...$this->vars);
+        run(function () {
+            try {
+                $fn = array_shift($this->vars);
+                $fn(...$this->vars);
+            } catch (\Swoole\ExitException $e) {
+                loger($e);
+            }
+        });
     }
 
     public function obj()
     {
 
-        $fn = array_shift($this->vars);
-
-        objRun($fn, ...$this->vars);
+        run(function () {
+            try {
+                $fn = array_shift($this->vars);
+                objRun($fn, ...$this->vars);
+            } catch (\Swoole\ExitException $e) {
+                loger($e);
+            }
+        });
 
     }
 
