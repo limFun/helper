@@ -5,7 +5,7 @@ namespace lim;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-04-26 20:13:36
+ * @Last Modified time: 2022-05-13 12:50:28
  */
 
 class Console
@@ -98,7 +98,7 @@ class Console
         switch ($app) {
             case 'hf':
                 $pid = file_get_contents(__LIM__ . '/runtime/hyperf.pid');
-                echo shell_exec('sudo kill -15 ' . $pid);
+                echo shell_exec('sudo kill -9 ' . $pid);
                 break;
             default:
                 return;
