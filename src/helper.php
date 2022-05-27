@@ -16,6 +16,7 @@ if (!function_exists('loger')) {
         }
         
         if ($file) {
+            $file = $file==true?date('Y-m-d').'log':$file;
             file_put_contents(__LIM__ . '/runtime/logs/' . $file, date('Y-m-d H:i:s') . ' ' . $v . PHP_EOL, FILE_APPEND);
         }
 
