@@ -5,7 +5,7 @@ namespace lim;
  * @Author: Wayren
  * @Date:   2022-03-29 12:12:06
  * @Last Modified by:   Wayren
- * @Last Modified time: 2022-05-13 12:50:28
+ * @Last Modified time: 2022-06-01 11:40:53
  */
 
 class Console
@@ -154,6 +154,22 @@ class Console
         });
 
     }
+
+    public function task()
+    {
+
+        run(function () {
+            try {
+                $fn = array_shift($this->vars);
+                [$class,$action]=explode(':', $fn);
+                objRun('App.Service.'.$class.'.Tasker:'.$action, ...$this->vars);
+            } catch (\Swoole\ExitException $e) {
+                loger($e);
+            }
+        });
+
+    }
+
 
     public function git()
     {
