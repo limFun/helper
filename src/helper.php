@@ -44,7 +44,7 @@ if (!function_exists('echox')) {
 }
 
 
-loadHelper();
+// loadHelper();
 
 function loader($class)
 {
@@ -92,15 +92,15 @@ function hfConfiger($configer)
     // loger('加载配置');
 }
 
-if (!function_exists('message')) {
-    /**
-     * @return bool|int
-     */
-    function message($contents, $event = [])
-    {
-        return new lim\Helper\MessageClient($contents, $event);
-    }
-}
+// if (!function_exists('message')) {
+//     /**
+//      * @return bool|int
+//      */
+//     function message($contents, $event = [])
+//     {
+//         return new lim\Helper\MessageClient($contents, $event);
+//     }
+// }
 
 if (!function_exists('config')) {
     /**
