@@ -186,12 +186,12 @@ if (!function_exists('proc')) {
     }
 }
 
-if (!function_exists('rpc')) {
-    function rpc($service = null, $onlyData = true)
-    {
-        return new lim\Helper\Rpclient($service, $onlyData);
-    }
-}
+// if (!function_exists('rpc')) {
+//     function rpc($service = null, $onlyData = true)
+//     {
+//         return new lim\Helper\Rpclient($service, $onlyData);
+//     }
+// }
 
 if (!function_exists('kv')) {
     function kv($service = null, $onlyData = true)
