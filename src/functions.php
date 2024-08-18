@@ -62,6 +62,16 @@ if (!function_exists('env')) {
 	}
 }
 
+function redis() {
+	$redis = new \Redis;
+	$c = config('redis');
+	$redis->connect($c['host'], $c['port']);
+	if ($c['auth']) {
+		$redis->auth($c['auth']);
+	}
+	return $redis;
+}
+
 function apiErr($message = '', $code = 300) {
 	die(json_encode(['code' => $code, 'message' => $message]));
 }
