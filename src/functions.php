@@ -3,6 +3,21 @@ declare (strict_types = 1);
 
 lim\Config::init();
 
+function token($data = '', $de = false) {
+	if ($de) {
+		if (!$ret = openssl_decrypt(base64_decode($data), 'AES-128-CBC', 'service.yuwan.cn', 1, 'service.yuwan.cn')) {
+			return null;
+		}
+		return json_decode($ret, true);
+	}
+
+	if (is_array($data) || is_object($data)) {
+		$data = json_encode($data);
+	}
+
+	return base64_encode(openssl_encrypt((string) $data, 'AES-128-CBC', 'service.yuwan.cn', 1, 'service.yuwan.cn'));
+}
+
 if (!function_exists('loger')) {
 	function loger($v = '', $type = 'debug', $file = null) {
 
