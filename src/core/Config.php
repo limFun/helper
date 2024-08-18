@@ -17,6 +17,7 @@ class Config {
 				include_once $f;
 			}
 		});
+
 		self::pf(ROOT_PATH . 'config', fn($f) => $GLOBALS['config'][preg_replace('/.+\/|.php/', '', $f)] = include $f);
 	}
 
@@ -40,7 +41,7 @@ class Config {
 		return $files ?? [];
 	}
 
-	public static function config($key = '') {
+	public static function get($key = '') {
 		if (!$key) {
 			return $GLOBALS['config'];
 		}

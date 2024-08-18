@@ -35,11 +35,8 @@ function http($value = '') {
 }
 
 if (!function_exists('config')) {
-
 	function config($key = '') {
-
-		return lim\Config::config($key);
-
+		return lim\Config::get($key);
 	}
 }
 

@@ -4,7 +4,6 @@ namespace lim;
 /**
  *
  */
-use think\facade\Db;
 
 class Router {
 
@@ -13,7 +12,7 @@ class Router {
 	protected $call = [];
 
 	public static function init() {
-		Db::setConfig(config('db'));
+
 		$h = new static;
 
 		return $h;

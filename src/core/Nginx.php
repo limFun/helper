@@ -4,6 +4,7 @@ namespace lim;
 /**
  *
  */
+use think\facade\Db;
 
 class Nginx {
 	public static function run() {
@@ -41,6 +42,7 @@ class Nginx {
 		}
 
 		try {
+			Db::setConfig(config('db'));
 			$result = $obj::init()->__before()->register($method, $data);
 
 			json($result);
