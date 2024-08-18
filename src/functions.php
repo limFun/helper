@@ -1,13 +1,6 @@
 <?php
 declare (strict_types = 1);
 
-spl_autoload_register(function ($class) {
-	$file = ROOT_PATH . str_replace('\\', '/', $class) . '.php';
-	if (is_file($file)) {
-		include_once $file;
-	}
-});
-
 lim\Config::init();
 
 if (!function_exists('loger')) {

@@ -4,8 +4,9 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f68c5f685d9cb87431f87347a0dc0ce2",
-    "packages": [
+    "content-hash": "f65256363ba808902c07bc52c864c63f",
+    "packages": [],
+    "packages-dev": [
         {
             "name": "psr/log",
             "version": "dev-master",
@@ -108,6 +109,39 @@
                 "source": "https://github.com/php-fig/simple-cache/tree/master"
             },
             "time": "2022-04-08T16:41:45+00:00"
+        },
+        {
+            "name": "swoole/ide-helper",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/swoole/ide-helper.git",
+                "reference": "7628f64d93593e18ee0afa478eacf32cefe8a82c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/swoole/ide-helper/zipball/7628f64d93593e18ee0afa478eacf32cefe8a82c",
+                "reference": "7628f64d93593e18ee0afa478eacf32cefe8a82c",
+                "shasum": ""
+            },
+            "default-branch": true,
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Team Swoole",
+                    "email": "team@swoole.com"
+                }
+            ],
+            "description": "IDE help files for Swoole.",
+            "support": {
+                "issues": "https://github.com/swoole/ide-helper/issues",
+                "source": "https://github.com/swoole/ide-helper/tree/master"
+            },
+            "time": "2024-06-25T05:13:17+00:00"
         },
         {
             "name": "topthink/think-helper",
@@ -213,41 +247,6 @@
                 "source": "https://github.com/top-think/think-orm/tree/3.0"
             },
             "time": "2024-08-17T15:02:18+00:00"
-        }
-    ],
-    "packages-dev": [
-        {
-            "name": "swoole/ide-helper",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/swoole/ide-helper.git",
-                "reference": "7628f64d93593e18ee0afa478eacf32cefe8a82c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/swoole/ide-helper/zipball/7628f64d93593e18ee0afa478eacf32cefe8a82c",
-                "reference": "7628f64d93593e18ee0afa478eacf32cefe8a82c",
-                "shasum": ""
-            },
-            "default-branch": true,
-            "type": "library",
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "Apache-2.0"
-            ],
-            "authors": [
-                {
-                    "name": "Team Swoole",
-                    "email": "team@swoole.com"
-                }
-            ],
-            "description": "IDE help files for Swoole.",
-            "support": {
-                "issues": "https://github.com/swoole/ide-helper/issues",
-                "source": "https://github.com/swoole/ide-helper/tree/master"
-            },
-            "time": "2024-06-25T05:13:17+00:00"
         }
     ],
     "aliases": [],

@@ -21,7 +21,8 @@
             "src/functions.php"
         ],
         "psr-4": {
-            "lim\\": "src/core"
+            "lim\\": "src/core",
+            "app\\": "app"
         }
     },
     "minimum-stability": "dev"
