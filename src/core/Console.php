@@ -12,6 +12,9 @@ class Console {
 		$method = array_shift($o);
 
 		switch ($method) {
+		case 'dev':
+			shell_exec('php -S 0.0.0.0:6699 -t ' . ROOT_PATH . '/public');
+			break;
 		case 'fn':
 			$fn = array_shift($o);
 			$fn(...$o);

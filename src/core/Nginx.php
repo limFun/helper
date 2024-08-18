@@ -35,7 +35,7 @@ class Nginx {
 
 		$obj = '\\app\\route\\' . $class;
 
-		if ($_SERVER['CONTENT_TYPE'] === 'application/json') {
+		if (($_SERVER['CONTENT_TYPE'] ?? null) === 'application/json') {
 			$data = json_decode(file_get_contents('php://input'), true);
 		} else {
 			$data = array_merge($_GET, $_POST);
