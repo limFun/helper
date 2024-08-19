@@ -7,6 +7,8 @@ namespace lim;
 
 class Router {
 
+	protected $pubRule = [];
+
 	protected $rule = [];
 
 	protected $call = [];
@@ -24,6 +26,10 @@ class Router {
 	}
 
 	public function register($m, $o) {
+
+		if ($this->pubRule) {
+			check($this->pubRule, $o);
+		}
 
 		if ($rule = $this->rule[$m] ?? null) {
 
