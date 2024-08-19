@@ -5,3 +5,4 @@ lim
 .env
 /public
 .git
+composer.lock
