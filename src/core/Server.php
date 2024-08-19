@@ -26,6 +26,12 @@ class Server {
 			cli_set_process_title('CoServer');
 			$server = new CoServer('0.0.0.0', (int) env('APP_PORT', 9999), false);
 			$server->handle('/', function ($request, $response) {
+
+				$response->header('Access-Control-Allow-Origin', '*');
+				$response->header('Access-Control-Allow-Methods', '*');
+				$response->header('Access-Control-Allow-Headers', '*');
+				$response->header('Content-Type', 'application/json;charset=utf-8');
+
 				if ($request->server['path_info'] == '/favicon.ico' || $request->server['request_uri'] == '/favicon.ico') {
 					$response->end();
 					return;
