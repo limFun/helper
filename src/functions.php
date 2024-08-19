@@ -1,8 +1,6 @@
 <?php
 declare (strict_types = 1);
 
-lim\Config::init();
-
 function token($data = '', $de = false) {
 	if ($de) {
 		if (!$ret = openssl_decrypt(base64_decode($data), 'AES-128-CBC', 'service.yuwan.cn', 1, 'service.yuwan.cn')) {
@@ -79,3 +77,5 @@ function apiErr($message = '', $code = 300) {
 function json($data = [], $message = "success", $code = 200) {
 	die(json_encode(['code' => $code, 'message' => $message, 'result' => $data]));
 }
+
+lim\Config::init();
