@@ -21,34 +21,46 @@ class Nginx {
 			return;
 		}
 
-		if (str_contains($uri, '?')) {
-			[$uri, $get] = explode('?', $uri);
-		}
-
-		$res = explode('/', $uri);
-
-		if (count($res) != 2) {
-			die('fuck');
-		}
-
-		[$class, $method] = $res;
-
-		$obj = '\\app\\route\\' . $class;
-
-		if (($_SERVER['CONTENT_TYPE'] ?? null) === 'application/json') {
-			$data = json_decode(file_get_contents('php://input'), true);
-		} else {
-			$data = array_merge($_GET, $_POST);
-		}
-
 		try {
+
+			if (str_contains($uri, '?')) {
+				[$uri, $get] = explode('?', $uri);
+			}
+
+			$res = explode('/', $uri);
+
+			if (count($res) != 2) {
+				apiErr('路由错误');
+			}
+
+			[$class, $method] = $res;
+
+			$obj = '\\app\\route\\' . $class;
+
+			if (($_SERVER['CONTENT_TYPE'] ?? null) === 'application/json') {
+				$data = json_decode(file_get_contents('php://input'), true);
+			} else {
+				$data = array_merge($_GET, $_POST);
+			}
+
 			Db::setConfig(config('db'));
 			$result = $obj::init()->__before()->register($method, $data);
 
-			json($result);
+			// json($result);
+			echo json_encode(['code' => 200, 'message' => 'success', 'result' => $result]);
+
 		} catch (\Exception $e) {
-			apiErr($e->getMessage());
+			echo json_encode(['code' => $e->getCode(), 'message' => $e->getMessage()]);
 		}
+
+		// try {
+		// 	Db::setConfig(config('db'));
+		// 	$result = $obj::init()->__before()->register($method, $data);
+
+		// 	json($result);
+		// } catch (\Exception $e) {
+		// 	apiErr($e->getMessage());
+		// }
 
 	}
 }

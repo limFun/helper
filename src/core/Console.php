@@ -20,7 +20,7 @@ class Console {
 			$fn(...$o);
 			break;
 		case 'server':
-
+			Server::run();
 			break;
 		default:
 			loger('lim');

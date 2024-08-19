@@ -73,7 +73,7 @@ function redis() {
 }
 
 function apiErr($message = '', $code = 300) {
-	die(json_encode(['code' => $code, 'message' => $message]));
+	throw new \lim\ApiErr($message, $code);
 }
 
 function json($data = [], $message = "success", $code = 200) {
