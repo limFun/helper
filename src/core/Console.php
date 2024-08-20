@@ -16,6 +16,7 @@ class Console {
 			shell_exec('php -S 0.0.0.0:' . env('APP_PORT', 9999) . ' -t ' . ROOT_PATH . '/public');
 			break;
 		case 'fn':
+			\think\facade\Db::setConfig(config('db'))
 			$fn = array_shift($o);
 			$fn(...$o);
 			break;
