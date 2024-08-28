@@ -10,7 +10,8 @@
         "ext-redis": "*",
         "ext-curl": "*",
         "swoole/ide-helper": "dev-master",
-        "topthink/think-orm": "^3.0"
+        "topthink/think-orm": "^3.0",
+        "league/climate": "^3.8"
     },
     "authors": [{
         "name": "WayrenChen",
