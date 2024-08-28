@@ -84,10 +84,14 @@ class Http {
 		});
 		if ($data) {
 			curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data, 256));
-			$headers[] = 'content-type:application/json;';
+			$headers['content-type'] = 'application/json;';
 		}
 		if ($headers) {
-			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+			$tmp = [];
+			foreach ($headers as $k => $v) {
+				$tmp[] = $k . ':' . $v;
+			}
+			curl_setopt($ch, CURLOPT_HTTPHEADER, $tmp);
 		}
 		if ($cookies) {
 			$cookie_str = '';
