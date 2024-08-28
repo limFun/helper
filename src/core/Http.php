@@ -54,6 +54,11 @@ class Http {
 		return $res;
 	}
 
+	public function method($action) {
+		$res = $this->request($this->url, strtoupper($action), $this->data, $this->option, $this->header, $this->cookie);
+		return $res;
+	}
+
 	public function request($url, $method, $data = null, $options = null, $headers = null, $cookies = null) {
 		$ch = curl_init($url);
 		if (empty($ch)) {
