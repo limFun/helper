@@ -83,7 +83,8 @@ class Http {
 			return $len;
 		});
 		if ($data) {
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data, 256));
+			$headers[] = 'content-type:application/json;';
 		}
 		if ($headers) {
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
