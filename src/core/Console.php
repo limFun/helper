@@ -23,9 +23,21 @@ class Console {
 		case 'server':
 			Server::run();
 			break;
+		case 'task':
+			if (!$c = array_shift($o)) {
+				return loger('任务参数是必须的');
+			}
+			if (!str_contains($c, '.')) {
+				return loger('参数规则：类.方法 参数1 参数2 ……');
+			}
+			[$class, $action] = explode('.', $c);
+			$obj = '\\app\\task\\' . ucfirst($class);
+			$obj::$action(...$o);
+			break;
 		default:
-			loger('lim');
+			loger(['method' => $method, 'option' => $o]);
 			break;
 		}
+
 	}
 }
