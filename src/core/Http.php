@@ -24,22 +24,22 @@ class Http {
 		return $h;
 	}
 
-	public function data($value = '') {
+	public function data($data = []) {
 		$this->data = $data;
 		return $this;
 	}
 
-	public function option($option = '') {
+	public function option($option = null) {
 		$this->option = $option;
 		return $this;
 	}
 
-	public function header($header = '') {
+	public function header($header = null) {
 		$this->header = $header;
 		return $this;
 	}
 
-	public function cookie($cookie = '') {
+	public function cookie($cookie = null) {
 		$this->cookie = $cookie;
 		return $this;
 	}
