@@ -82,7 +82,7 @@ class QueryBuilder {
 	private $option = [
 		'debug' => false,
 
-		// 'distinct' => '',
+		'distinct' => '',
 		'field' => '*',
 		'table' => '',
 		// 'force' => '',
@@ -240,7 +240,7 @@ class QueryBuilder {
 		$c = config('model.' . $this->option['table']);
 		foreach ($res as $k => &$v) {
 			if (($c[$k]['type'] ?? null) == 'json') {
-				$v = json_decode($v, true);
+				$v = json_decode((string) $v, true);
 			}
 		}
 	}
