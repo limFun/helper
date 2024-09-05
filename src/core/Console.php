@@ -20,6 +20,9 @@ class Console {
 			$fn = array_shift($o);
 			$fn(...$o);
 			break;
+		case 'dbcache':
+			Db::schema();
+			break;
 		case 'server':
 			Server::run();
 			break;
