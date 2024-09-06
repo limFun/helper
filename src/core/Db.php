@@ -14,13 +14,14 @@ class Db {
 				PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 				PDO::ATTR_CASE => PDO::CASE_NATURAL,
 				PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+				PDO::ATTR_EMULATE_PREPARES => false, //解析数据库类型
+				PDO::ATTR_STRINGIFY_FETCHES => false,
 			];
 			try {
 				self::$pdo = new PDO($dsn, $c['username'], $c['password'], $option);
 			} catch (PDOException $e) {
-				die("连接数据库失败: " . $e->getMessage());
+				apiErr("连接数据库失败: " . $e->getMessage());
 			}
-			loger('db init');
 		}
 	}
 	public static function transaction($call = null) {
@@ -44,7 +45,28 @@ class Db {
 		$res = self::$pdo->query($sql)->fetchall();
 		$config = [];
 		foreach ($res as $k => $v) {
-			$config[$v['TABLE_NAME']][$v['COLUMN_NAME']] = ['type' => $v['DATA_TYPE'], 'commit' => $v['COLUMN_COMMENT']];
+			switch ($v['DATA_TYPE']) {
+			case 'int':
+			case 'tinyint':
+			case 'decimal':
+				$type = 'numeric';
+				break;
+			case 'varchar':
+			case 'text':
+				$type = 'string';
+				break;
+			case 'json':
+				$type = 'array';
+				break;
+			default:
+				$type = $v['DATA_TYPE'];
+				break;
+			}
+			$commit = empty($v['COLUMN_COMMENT']) ? $v['COLUMN_NAME'] : $v['COLUMN_COMMENT'];
+			if (str_contains($commit, '|')) {
+				[$commit, $type] = explode('|', $commit);
+			}
+			$config[$v['TABLE_NAME']][$v['COLUMN_NAME']] = ['type' => $type, 'commit' => $commit];
 		}
 		$configContent = "<?php\nreturn " . str_replace(['{', '}', ':'], ['[', ']', '=>'], json_encode($config, 256)) . ";\n";
 		file_put_contents(ROOT_PATH . 'config/model.php', $configContent);
@@ -67,6 +89,8 @@ class QueryBuilder {
 	private $option = ['debug' => false, 'field' => '*', 'table' => '', 'where' => '1', 'group' => '', 'order' => '', 'limit' => '', 'lock' => '', 'sql' => '', 'execute' => []];
 	public function __call($method, $argv) {
 		switch (strtolower($method)) {
+		case 'schema':
+			return $this->schema;
 		case 'debug':
 			$this->option['debug'] = true;
 			break;
@@ -108,11 +132,13 @@ class QueryBuilder {
 			$this->option['sql'] = "SELECT COUNT({$argv[0]}) as result FROM {$this->option['table']} WHERE {$this->option['where']}";
 			return $this->execute()->fetch()['result'];
 		default:
+			// loger($method);
 			break;
 		}
 		return $this;
 	}
 	public function insert($data = [], $id = false) {
+		if (!$data) {return;}
 		if (!isset($data[0])) {$data = [$data];}
 		foreach ($data as $k => &$v) {
 			foreach ($v as $key => $value) {if (!isset($this->schema[$key])) {unset($v[$key]);}} //删除无效数据
@@ -143,22 +169,27 @@ class QueryBuilder {
 			$sets[] = "`update_at`=?";
 			$execute[] = time();
 		}
-		//组合参数
-		$this->option['execute'] = array_merge($execute ?? [], $this->option['execute']);
+		$this->option['execute'] = array_merge($execute ?? [], $this->option['execute']); //组合参数
 		$set = implode(',', $sets);
 		$this->option['sql'] = "UPDATE `{$this->option['table']}` SET {$set} WHERE " . $this->option['where'];
 		return $this->execute();
 	}
 	public function select() {
 		$this->option['sql'] = "SELECT {$this->option['field']} FROM {$this->option['table']} WHERE {$this->option['where']}{$this->option['group']}{$this->option['order']}{$this->option['limit']}{$this->option['lock']}";
-		$res = $this->execute()->fetchAll();
-		foreach ($res as $k => &$v) {$this->parseResult($v);}
+		$res = $this->execute();
+		if ($res->rowCount()) {
+			$res = $res->fetchAll();
+			foreach ($res as $k => &$v) {$this->parseResult($v);}
+		}
 		return $res;
 	}
 	public function find($id = null) {
 		$this->option['sql'] = $id ? "SELECT {$this->option['field']} FROM `{$this->option['table']}` WHERE id = $id" : "SELECT {$this->option['field']} FROM `{$this->option['table']}` WHERE {$this->option['where']}{$this->option['order']} LIMIT 1";
-		$res = $this->execute()->fetch();
-		$this->parseResult($res);
+		$res = $this->execute();
+		if ($res->rowCount()) {
+			$res = $res->fetch();
+			$this->parseResult($res);
+		}
 		return $res;
 	}
 	private function parseWhere($un = 'AND', $a = null, $b = null, $c = null) {
@@ -178,16 +209,27 @@ class QueryBuilder {
 			} //数组
 		}
 	} //解析条件
-	private function parseResult(&$res) {
-		$c = config('model.' . $this->option['table']);
+	private function parseResult(&$res = []) {
+		// $c = config('model.' . $this->option['table']);
+		// print_r($this->schema);
 		foreach ($res as $k => &$v) {
-			if (($c[$k]['type'] ?? null) == 'json') {$v = json_decode((string) $v, true);}
+			if (($this->schema[$k]['type'] ?? null) == 'json') {$v = json_decode((string) $v, true);}
+
 		}
 	} //解析结果
-	private function execute() {
+	public function execute() {
+
 		if ($this->option['debug']) {return loger($this);}
 		$h = Db::$pdo->prepare($this->option['sql']);
 		$h->execute($this->option['execute']);
 		return $h;
 	} //执行查询
+	public function check($data = []) {
+		$rule = [];
+		foreach ($this->schema as $k => $v) {
+			$rule[$v['commit'] . '|' . $k] = $v['type'];
+		}
+		Validator::run($data, $rule)->throw();
+		return $this;
+	}
 }

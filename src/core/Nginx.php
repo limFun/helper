@@ -4,7 +4,6 @@ namespace lim;
 /**
  *
  */
-use think\facade\Db;
 
 class Nginx {
 	public static function run() {
@@ -43,24 +42,11 @@ class Nginx {
 				$data = array_merge($_GET, $_POST);
 			}
 
-			Db::setConfig(config('db'));
 			$result = $obj::init()->__before()->register($method, $data);
-
-			// json($result);
 			echo json_encode(['code' => 200, 'message' => 'success', 'result' => $result]);
 
 		} catch (\Exception $e) {
 			echo json_encode(['code' => $e->getCode(), 'message' => $e->getMessage()]);
 		}
-
-		// try {
-		// 	Db::setConfig(config('db'));
-		// 	$result = $obj::init()->__before()->register($method, $data);
-
-		// 	json($result);
-		// } catch (\Exception $e) {
-		// 	apiErr($e->getMessage());
-		// }
-
 	}
 }

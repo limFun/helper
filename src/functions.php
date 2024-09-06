@@ -1,6 +1,12 @@
 <?php
 declare (strict_types = 1);
 
+function array_once(&$o, $k = '', $v = '') {
+	$t = $o[$k] ?? $v;
+	unset($o[$k]);
+	return $t;
+}
+
 function token($data = '', $de = false) {
 	if ($de) {
 		if (!$ret = openssl_decrypt(base64_decode($data), 'AES-128-CBC', 'service.yuwan.cn', 1, 'service.yuwan.cn')) {
@@ -18,18 +24,10 @@ function token($data = '', $de = false) {
 
 if (!function_exists('loger')) {
 	function loger($v = '', $type = 'debug', $file = null) {
-
-		// if ($file) {
-		//  $file = $file == true ? date('Y-m-d') . 'log' : $file;
-		//  file_put_contents(ROOT_PATH . '/runtime/logs/' . $file, date('Y-m-d H:i:s') . ' ' . $v . PHP_EOL, FILE_APPEND);
-		// }
-
 		if (PHP_SAPI == 'cli') {
 			$color = ['debug' => '\\e[33m', 'info' => '\\e[32m', 'err' => '\\e[31m'];
-
 			if (is_array($v) || is_object($v)) {
 				$v = print_r($v, true);
-
 			}
 			$str = '\\033[36m[' . date('H:i:s') . '] ' . $color[$type];
 			echo shell_exec('echo -e -n "' . $str . '"') . $v . PHP_EOL;

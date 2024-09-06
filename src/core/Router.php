@@ -14,16 +14,11 @@ class Router {
 	protected $call = [];
 
 	public static function init() {
-
 		$h = new static;
-
 		return $h;
 	}
 
-	public function __before() {
-
-		return $this;
-	}
+	public function __before() {return $this;}
 
 	public function register($m, $o) {
 
@@ -32,11 +27,17 @@ class Router {
 		}
 
 		if ($rule = $this->rule[$m] ?? null) {
-
 			check($rule, $o);
 		}
 
 		if ($h = $this->call[$m] ?? null) {
+			if ($h[2] ?? null) {
+				$token = $_SERVER['HTTP_TOKEN'] ?? '';
+				if (!token($token, true)) {
+					apiErr('请登录');
+				}
+			}
+			$this->callbefore();
 			return $h[0]::{$h[1]}($o);
 		}
 
