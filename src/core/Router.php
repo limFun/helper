@@ -37,7 +37,6 @@ class Router {
 					apiErr('请登录');
 				}
 			}
-			$this->callbefore();
 			return $h[0]::{$h[1]}($o);
 		}
 
