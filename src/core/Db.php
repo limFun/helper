@@ -213,7 +213,7 @@ class QueryBuilder {
 		// $c = config('model.' . $this->option['table']);
 		// print_r($this->schema);
 		foreach ($res as $k => &$v) {
-			if (($this->schema[$k]['type'] ?? null) == 'json') {$v = json_decode((string) $v, true);}
+			if (($this->schema[$k]['type'] ?? null) == 'array') {$v = json_decode((string) $v, true);}
 
 		}
 	} //解析结果
