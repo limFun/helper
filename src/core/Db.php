@@ -193,6 +193,29 @@ class QueryBuilder {
 		}
 		return $res;
 	}
+	public function value($column) {
+		$this->option['sql'] = "SELECT {$column} FROM `{$this->option['table']}` WHERE {$this->option['where']}{$this->option['order']} LIMIT 1";
+		$res = $this->execute()->fetch();
+		$this->parseResult($res);
+		return $res[$column];
+	}
+	public function column($value = '', $key = null) {
+		$field = $key ? $key . ',' . $value : $value;
+		$n = substr_count($field, ',');
+		$this->option['sql'] = "SELECT {$field} FROM {$this->option['table']} WHERE {$this->option['where']}{$this->option['group']}{$this->option['order']}{$this->option['limit']}{$this->option['lock']}";
+		$res = $this->execute()->fetchAll();
+		foreach ($res as $k => &$v) {$this->parseResult($v);}
+		if ($key) {
+			$tmp = [];
+			foreach ($res as $kk => $vv) {
+				$tk = array_once($vv, $key);
+				$tmp[$tk] = $n > 1 ? $vv : $vv[$value];
+			}
+			return $tmp;
+		} else {
+			return $n == 1 ? $res : array_column($res, $value);
+		}
+	}
 	private function parseWhere($un = 'AND', $a = null, $b = null, $c = null) {
 		if ($c !== null) {
 			$this->option['where'] .= " $un `$a` $b ?";
@@ -212,7 +235,7 @@ class QueryBuilder {
 	} //解析条件
 	private function parseResult(&$res = []) {
 		foreach ($res as $k => &$v) {
-			switch ($this->schema[$k]['type']) {
+			switch ($this->schema[$k]['type'] ?? null) {
 			case 'array':
 				$v = $v ? (array) json_decode($v, true) : [];
 				break;
