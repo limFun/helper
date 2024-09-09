@@ -5,11 +5,12 @@ use PDO;
 use PDOException;
 
 class Db {
+	public static $config = [];
 	public static $pdo;
 	public static function init() {
+		if (!self::$config) {self::$config = config('db.default');}
 		if (!self::$pdo) {
-			$c = config('db.connections.mysql');
-			$dsn = "mysql:host={$c['hostname']};dbname={$c['database']};port={$c['hostport']}";
+			$dsn = "mysql:host=" . self::$config['hostname'] . ";dbname=" . self::$config['database'] . ";port=" . self::$config['hostport'];
 			$option = [
 				PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 				PDO::ATTR_CASE => PDO::CASE_NATURAL,
@@ -18,7 +19,7 @@ class Db {
 				PDO::ATTR_STRINGIFY_FETCHES => false,
 			];
 			try {
-				self::$pdo = new PDO($dsn, $c['username'], $c['password'], $option);
+				self::$pdo = new PDO($dsn, self::$config['username'], self::$config['password'], $option);
 			} catch (PDOException $e) {
 				apiErr("连接数据库失败: " . $e->getMessage());
 			}
@@ -41,14 +42,12 @@ class Db {
 	}
 	public static function schema() {
 		self::init();
-		$sql = "SELECT TABLE_NAME,COLUMN_NAME,ORDINAL_POSITION,IS_NULLABLE,DATA_TYPE,COLUMN_COMMENT FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'ly' ORDER BY TABLE_NAME ASC,ORDINAL_POSITION ASC ";
+		$sql = "SELECT TABLE_NAME,COLUMN_NAME,DATA_TYPE,COLUMN_COMMENT FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '" . self::$config['database'] . "' ORDER BY TABLE_NAME ASC,ORDINAL_POSITION ASC ";
 		$res = self::$pdo->query($sql)->fetchall();
 		$config = [];
 		foreach ($res as $k => $v) {
 			switch ($v['DATA_TYPE']) {
-			case 'int':
-			case 'tinyint':
-			case 'decimal':
+			case 'int':case 'tinyint':case 'decimal':
 				$type = 'numeric';
 				break;
 			case 'varchar':
@@ -98,6 +97,10 @@ class QueryBuilder {
 			$this->option['table'] = $argv[0];
 			$this->schema = config('model.' . $argv[0]);
 			break;
+		case 'name':
+			$this->option['table'] = Db::$config['prefix'] . $argv[0];
+			$this->schema = config('model.' . $argv[0]);
+			break;
 		case 'field':
 			$this->option['field'] = $argv[0] ?? '*';
 			break;
@@ -125,15 +128,12 @@ class QueryBuilder {
 		case 'sql':
 			$this->option['sql'] = $argv[0];
 			break;
-		case 'sum';
-		case 'max':
-		case 'min':
+		case 'sum':case 'max':case 'min':
 			if (!isset($argv[0])) {return NULL;}
 		case 'count':
 			$this->option['sql'] = "SELECT {$method}(" . ($argv[0] ?? '*') . ") as result FROM {$this->option['table']} WHERE {$this->option['where']}";
 			return $this->execute()->fetch()['result'];
 		default:
-			// loger($method);
 			break;
 		}
 		return $this;
@@ -211,22 +211,29 @@ class QueryBuilder {
 		}
 	} //解析条件
 	private function parseResult(&$res = []) {
-		// $c = config('model.' . $this->option['table']);
-		// print_r($this->schema);
 		foreach ($res as $k => &$v) {
-			if (($this->schema[$k]['type'] ?? null) == 'array') {$v = json_decode((string) $v, true);}
-
+			switch ($this->schema[$k]['type']) {
+			case 'array':
+				$v = $v ? (array) json_decode($v, true) : [];
+				break;
+			case 'object':
+				$v = $v ? (object) json_decode($v, true) : new \stdclass();
+				break;
+			case 'string':
+				$v ??= '';
+				break;
+			default:
+				break;
+			}
 		}
 	} //解析结果
 	public function execute() {
-
 		if ($this->option['debug']) {return loger($this);}
 		$h = Db::$pdo->prepare($this->option['sql']);
 		$h->execute($this->option['execute']);
 		return $h;
 	} //执行查询
-	public function check($data = []) {
-		$rule = [];
+	public function check($data = [], $rule = []) {
 		foreach ($this->schema as $k => $v) {
 			$rule[$v['commit'] . '|' . $k] = $v['type'];
 		}

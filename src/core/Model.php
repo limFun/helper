@@ -19,14 +19,9 @@ class Model {
 	}
 	public static function __callStatic($method, $argv) {
 		switch (strtolower($method)) {
-		case 'h':
-		case 'query':
+		case 'h':case 'query':
 			return new static(...$argv);
-		case 'create':
-		case 'delete':
-		case 'update':
-		case 'list':
-		case 'detail':
+		case 'create':case 'delete':case 'update':case 'list':case 'detail':
 			return self::h(...$argv)->check($method)->{$method . 'Before'}()->{$method . 'Doing'}()->{$method . 'After'}();
 		default:
 			return call_user_func_array([self::h()->db, $method], $argv);
@@ -45,28 +40,14 @@ class Model {
 			}
 			Validator::run($this->data, $rule)->throw();
 			break;
-		case 'createbefore':
-			break;
 		case 'createdoing':
 			$this->result['createId'] = $this->db->insert($this->data, true);
-			break;
-		case 'createafter':
-			return $this->result;
-		case 'deletebefore':
 			break;
 		case 'deletedoing':
 			$this->result['deleteRow'] = $this->db->where($this->data)->delete()->rowCount();
 			break;
-		case 'deleteafter':
-			return $this->result;
-		case 'updatebefore':
-			break;
 		case 'updatedoing':
 			$this->result['updatedRow'] = $this->db->update($this->data)->rowCount();
-			break;
-		case 'updateafter':
-			return $this->result;
-		case 'listbefore':
 			break;
 		case 'listdoing':
 			$page = array_once($this->data, 'page', 1);
@@ -74,14 +55,10 @@ class Model {
 			$this->result['count'] = $this->db->count('id');
 			$this->result['list'] = $this->db->page($page, $limit)->select();
 			break;
-		case 'listafter':
-			return $this->result;
-		case 'detailbefore':
-			break;
 		case 'detaildoing':
 			$this->result = $this->db->where($this->data)->find();
 			break;
-		case 'detailafter':
+		case 'createafter':case 'deleteafter':case 'updateafter':case 'listafter':case 'detailafter': //执行后钩子
 			return $this->result;
 		}
 		return $this;
