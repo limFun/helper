@@ -95,7 +95,7 @@ class Validator {
 	}
 
 	public function error() {
-		// code...
+
 	}
 
 	public function throw() {

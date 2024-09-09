@@ -1,6 +1,6 @@
 <?php
 declare (strict_types = 1);
-
+class limApiErr extends \Exception {}
 function array_shifter(&$o, $k = '', $v = '') {
 	$t = $o[$k] ?? $v;
 	unset($o[$k]);
@@ -45,6 +45,6 @@ function redis() {
 	if ($c['auth']) {$redis->auth($c['auth']);}
 	return $redis;
 }
-function apiErr($message = '', $code = 300) {throw new \lim\ApiErr($message, $code);}
+function apiErr($message = '', $code = 300) {throw new limApiErr($message, $code);}
 function json($data = [], $message = "success", $code = 200) {die(json_encode(['code' => $code, 'message' => $message, 'result' => $data]));}
 lim\Config::init();
