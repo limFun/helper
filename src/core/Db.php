@@ -126,10 +126,11 @@ class QueryBuilder {
 			$this->option['sql'] = $argv[0];
 			break;
 		case 'sum';
-			$this->option['sql'] = "SELECT SUM({$argv[0]}) as result FROM {$this->option['table']} WHERE {$this->option['where']}";
-			return $this->execute()->fetch()['result'];
+		case 'max':
+		case 'min':
+			if (!isset($argv[0])) {return NULL;}
 		case 'count':
-			$this->option['sql'] = "SELECT COUNT({$argv[0]}) as result FROM {$this->option['table']} WHERE {$this->option['where']}";
+			$this->option['sql'] = "SELECT {$method}(" . ($argv[0] ?? '*') . ") as result FROM {$this->option['table']} WHERE {$this->option['where']}";
 			return $this->execute()->fetch()['result'];
 		default:
 			// loger($method);
