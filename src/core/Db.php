@@ -128,7 +128,7 @@ class QueryBuilder {
 		case 'sql':
 			$this->option['sql'] = $argv[0];
 			break;
-		case 'sum':case 'max':case 'min':
+		case 'sum':case 'max':case 'min':case 'avg':
 			if (!isset($argv[0])) {return NULL;}
 		case 'count':
 			$this->option['sql'] = "SELECT {$method}(" . ($argv[0] ?? '*') . ") as result FROM {$this->option['table']} WHERE {$this->option['where']}";
@@ -158,7 +158,7 @@ class QueryBuilder {
 	public function update($data = []) {
 		foreach ($data as $k => $v) {
 			if (!isset($this->schema[$k])) {continue;} //清理无效数据
-			if ($this->schema[$k]['type'] == 'json') {$v = json_encode($v, 256);} //json数据序列化
+			if (in_array($this->schema[$k]['type'], ['array', 'object'])) {$v = json_encode($v, 256);} //json数据序列化
 			if ($this->option['where'] == '1' && $k == 'id') {
 				$this->option['where'] = ' id = ' . $v;
 				continue;

@@ -3,17 +3,17 @@ declare (strict_types = 1);
 namespace lim;
 
 class Model {
-	protected $table = null;
+	protected $table = '';
 	protected $db;
 	protected $data = [];
 	public $result = [];
 	function __construct($data = []) {
-		$name = basename(str_replace('\\', '/', static::class)); //解析数据表
-		$table = '';
-		for ($i = 0; $i < strlen($name); $i++) {
-			$table .= ctype_upper($name[$i]) && $i > 0 ? '_' . strtolower($name[$i]) : strtolower($name[$i]);
+		if (!$this->table) {
+			$name = basename(str_replace('\\', '/', static::class)); //解析数据表
+			for ($i = 0; $i < strlen($name); $i++) {
+				$this->table .= ctype_upper($name[$i]) && $i > 0 ? '_' . strtolower($name[$i]) : strtolower($name[$i]);
+			}
 		}
-		$this->table ??= $table;
 		$this->db = Db::table($this->table);
 		$this->data = $data;
 	}
