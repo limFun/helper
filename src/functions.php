@@ -1,7 +1,7 @@
 <?php
 declare (strict_types = 1);
 
-function array_once(&$o, $k = '', $v = '') {
+function array_shifter(&$o, $k = '', $v = '') {
 	$t = $o[$k] ?? $v;
 	unset($o[$k]);
 	return $t;

@@ -50,8 +50,8 @@ class Model {
 			$this->result['updatedRow'] = $this->db->update($this->data)->rowCount();
 			break;
 		case 'listdoing':
-			$page = array_once($this->data, 'page', 1);
-			$limit = array_once($this->data, 'limit', 10);
+			$page = array_shifter($this->data, 'page', 1);
+			$limit = array_shifter($this->data, 'limit', 10);
 			$this->result['count'] = $this->db->count('id');
 			$this->result['list'] = $this->db->page($page, $limit)->select();
 			break;

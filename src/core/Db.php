@@ -208,7 +208,7 @@ class QueryBuilder {
 		if ($key) {
 			$tmp = [];
 			foreach ($res as $kk => $vv) {
-				$tk = array_once($vv, $key);
+				$tk = array_shifter($vv, $key);
 				$tmp[$tk] = $n > 1 ? $vv : $vv[$value];
 			}
 			return $tmp;
