@@ -177,18 +177,14 @@ class QueryBuilder {
 	}
 	public function select() {
 		$this->option['sql'] = "SELECT {$this->option['field']} FROM {$this->option['table']} WHERE {$this->option['where']}{$this->option['group']}{$this->option['order']}{$this->option['limit']}{$this->option['lock']}";
-		$res = $this->execute();
-		if ($res->rowCount()) {
-			$res = $res->fetchAll();
+		if ($res = $this->execute()->fetchAll()) {
 			foreach ($res as $k => &$v) {$this->parseResult($v);}
 		}
 		return $res;
 	}
 	public function find($id = null) {
 		$this->option['sql'] = $id ? "SELECT {$this->option['field']} FROM `{$this->option['table']}` WHERE id = $id" : "SELECT {$this->option['field']} FROM `{$this->option['table']}` WHERE {$this->option['where']}{$this->option['order']} LIMIT 1";
-		$res = $this->execute();
-		if ($res->rowCount()) {
-			$res = $res->fetch();
+		if ($res = $this->execute()->fetch()) {
 			$this->parseResult($res);
 		}
 		return $res;
