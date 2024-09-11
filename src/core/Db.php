@@ -47,18 +47,11 @@ class Db {
 		$config = [];
 		foreach ($res as $k => $v) {
 			switch ($v['DATA_TYPE']) {
-			case 'int':case 'tinyint':case 'decimal':
-				$type = 'numeric';
+			case 'int':case 'bigint':case 'tinyint':case 'decimal':$type = 'numeric';
 				break;
-			case 'varchar':
-			case 'text':
-				$type = 'string';
+			case 'varchar':case 'text':$type = 'string';
 				break;
-			case 'json':
-				$type = 'array';
-				break;
-			default:
-				$type = $v['DATA_TYPE'];
+			default:$type = $v['DATA_TYPE'];
 				break;
 			}
 			$commit = empty($v['COLUMN_COMMENT']) ? $v['COLUMN_NAME'] : $v['COLUMN_COMMENT'];
