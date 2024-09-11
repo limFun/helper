@@ -260,7 +260,7 @@ class QueryBuilder {
 		foreach ($this->schema as $k => $v) {
 			$rule[$v['commit'] . '|' . $k] = $v['type'];
 		}
-		Validator::run($data, $rule)->throw();
+		Check::data($data)->rule($rule)->stop();
 		return $this;
 	}
 }

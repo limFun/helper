@@ -27,7 +27,7 @@ if (!function_exists('loger')) {
 	}
 }
 
-function check($rule = [], $data = []) {return lim\Validator::run($data, $rule)->throw();}
+function check($data = [], $rule = []) {return lim\Check::data($data)->rule($rule);}
 function http($value = '') {return lim\Http::url($value);}
 if (!function_exists('config')) {
 	function config($key = '') {return lim\Config::get($key);}

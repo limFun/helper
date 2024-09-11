@@ -23,11 +23,11 @@ class Router {
 	public function register($m, $o) {
 
 		if ($this->pubRule) {
-			check($this->pubRule, $o);
+			Check::data($o)->rule($this->pubRule)->stop();
 		}
 
 		if ($rule = $this->rule[$m] ?? null) {
-			check($rule, $o);
+			Check::data($o)->rule($rule)->stop();
 		}
 
 		if ($h = $this->call[$m] ?? null) {

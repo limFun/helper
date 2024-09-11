@@ -38,7 +38,7 @@ class Model {
 				$keyRule = $this->rule[$argv[0]][$k] ?? '';
 				$rule[$v['commit'] . '|' . $k] = $v['type'] . '|' . $keyRule;
 			}
-			Validator::run($this->data, $rule)->throw();
+			Check::data($this->data)->rule($rule)->stop();
 			break;
 		case 'createdoing':
 			if ($id = $this->db->insert($this->data, true)) {
