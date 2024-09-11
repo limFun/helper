@@ -1,4 +1,4 @@
-<?php
+<?
 declare (strict_types = 1);
 class limApiErr extends \Exception {}
 function array_shifter(&$o, $k = '', $v = '') {

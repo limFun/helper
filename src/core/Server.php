@@ -1,7 +1,6 @@
 <?
 declare (strict_types = 1);
 namespace lim;
-
 use function Swoole\Coroutine\run;
 use Swoole\Coroutine;
 use Swoole\Coroutine\Http\Server as CoServer;

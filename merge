@@ -1,0 +1,53 @@
+#!/usr/bin/env php
+<?
+declare(strict_types=1);
+!defined('ROOT_PATH') && define('ROOT_PATH', __DIR__ . '/');
+
+
+	 function pf($path = '', $call = null, &$files = []) {
+		if (is_dir($path)) {
+			$dp = dir($path);
+			while ($file = $dp->read()) {
+				if ($file != "." && $file != "..") {
+					pf($path . "/" . $file, $call, $files); //递归
+				}
+			}
+			$dp->close();
+		}
+		if (is_file($path)) {
+			$call ? $call($path) : array_push($files, $path);
+		}
+		return $files ?? [];
+	}
+
+
+$tmp="<?\ndeclare (strict_types = 1);\nnamespace lim;\n";
+
+$f =pf(ROOT_PATH . 'src');
+foreach ($f as $file) {
+			$t = file_get_contents($file);
+			$tmp.=str_replace(["<?","declare (strict_types = 1);",'namespace lim;'], '', $t);
+}
+
+print_r($tmp);
+file_put_contents(__DIR__.'/out.php', $tmp);
+
+// <?
+// declare (strict_types = 1);
+
+// namespace {
+// 	// 全局代码
+// 	use MyProject\Connection;
+
+// 	echo $a = MyProject\connect();
+// 	Connection::tt();
+// }
+// namespace MyProject {
+// 	const CONNECT_OK = 1;
+// 	class Connection {
+// 		public static function tt($value = '') {
+// 			echo time();
+// 		}
+// 	}
+// 	function connect() {return time();}
+// }

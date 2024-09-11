@@ -1,6 +1,7 @@
 <?
 declare (strict_types = 1);
 namespace lim;
+
 class Console {
 	public static function run($o) {
 		array_shift($o);

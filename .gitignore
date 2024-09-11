@@ -6,3 +6,5 @@ lim
 /public
 .git
 composer.lock
+test
+out.php
