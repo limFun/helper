@@ -4,7 +4,7 @@ namespace lim;
 
 class Response {
 	public static function __callStatic($method, $argv) {
-		return new static;
+		return (new static )->$method();
 	}
 	public function __call($method, $argv) {
 		switch (strtolower($method)) {
@@ -13,7 +13,6 @@ class Response {
 		case 'json':
 			break;
 		case 'send':
-			break;
 			break;
 		default:
 			break;

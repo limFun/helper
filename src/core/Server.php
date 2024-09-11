@@ -29,27 +29,18 @@ class Server {
 		}
 
 		try {
-
 			if (str_contains($uri, '?')) {
 				[$uri, $get] = explode('?', $uri);
 			}
-
 			$res = explode('/', $uri);
-
-			if (count($res) != 2) {
-				apiErr('路由错误');
-			}
-
+			if (count($res) != 2) {apiErr('路由错误');}
 			[$class, $method] = $res;
-
 			$obj = '\\app\\route\\' . $class;
-
 			if (($_SERVER['CONTENT_TYPE'] ?? null) === 'application/json') {
 				$data = json_decode(file_get_contents('php://input'), true);
 			} else {
 				$data = array_merge($_GET, $_POST);
 			}
-
 			$result = $obj::init()->__before()->register($method, $data);
 			echo json_encode(['code' => 200, 'message' => 'success', 'result' => $result]);
 
