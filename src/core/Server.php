@@ -3,6 +3,7 @@ declare (strict_types = 1);
 namespace lim;
 
 use function Swoole\Coroutine\run;
+use Swoole\Coroutine;
 use Swoole\Coroutine\Http\Server as CoServer;
 use Swoole\Process\Manager;
 use Swoole\Process\Pool;
@@ -67,7 +68,7 @@ class Server {
 			cli_set_process_title('CoServer');
 			$server = new CoServer('0.0.0.0', (int) env('APP_PORT', 9999), false);
 			$server->handle('/', function ($request, $response) {
-
+				Coroutine::getContext()['request'] = $request;
 				$response->header('Access-Control-Allow-Origin', '*');
 				$response->header('Access-Control-Allow-Methods', '*');
 				$response->header('Access-Control-Allow-Headers', '*');
