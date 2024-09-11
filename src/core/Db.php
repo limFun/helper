@@ -248,14 +248,10 @@ class QueryBuilder {
 	} //解析结果
 	public function execute() {
 		if ($this->option['debug']) {return loger($this);}
-		$h = Db::$pdo->prepare($this->option['sql']);
-		$h->execute($this->option['execute']);
-		return $h;
+		return Db::$pdo->prepare($this->option['sql'])->execute($this->option['execute']);
 	} //执行查询
 	public function check($data = [], $rule = []) {
-		foreach ($this->schema as $k => $v) {
-			$rule[$v['commit'] . '|' . $k] = $v['type'];
-		}
+		foreach ($this->schema as $k => $v) {$rule[$v['commit'] . '|' . $k] = $v['type'];}
 		Check::data($data)->rule($rule)->stop();
 		return $this;
 	}
