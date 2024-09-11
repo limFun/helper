@@ -41,7 +41,9 @@ class Model {
 			Validator::run($this->data, $rule)->throw();
 			break;
 		case 'createdoing':
-			$this->result['createId'] = $this->db->insert($this->data, true);
+			if ($id = $this->db->insert($this->data, true)) {
+				$this->result = Db::table($this->table)->find($id);
+			}
 			break;
 		case 'deletedoing':
 			$this->result['deleteRow'] = $this->db->where($this->data)->delete()->rowCount();
