@@ -254,7 +254,7 @@ class QueryBuilder {
 	} //执行查询
 	public function check($data = [], $rule = []) {
 		foreach ($this->schema as $k => $v) {$rule[$v['commit'] . '|' . $k] = $v['type'];}
-		Check::data($data)->rule($rule)->stop();
+		check($data, $rule)->stop();
 		return $this;
 	}
 }

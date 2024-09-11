@@ -38,7 +38,7 @@ class Model {
 				$keyRule = $this->rule[$argv[0]][$k] ?? '';
 				$rule[$v['commit'] . '|' . $k] = $v['type'] . '|' . $keyRule;
 			}
-			Check::data($this->data)->rule($rule)->stop();
+			check($this->data, $rule)->stop();
 			break;
 		case 'createdoing':
 			if ($id = $this->db->insert($this->data, true)) {
