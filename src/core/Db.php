@@ -248,7 +248,9 @@ class QueryBuilder {
 	} //解析结果
 	public function execute() {
 		if ($this->option['debug']) {return loger($this);}
-		return Db::$pdo->prepare($this->option['sql'])->execute($this->option['execute']);
+		$h = Db::$pdo->prepare($this->option['sql']);
+		$h->execute($this->option['execute']);
+		return $h;
 	} //执行查询
 	public function check($data = [], $rule = []) {
 		foreach ($this->schema as $k => $v) {$rule[$v['commit'] . '|' . $k] = $v['type'];}
