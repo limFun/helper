@@ -142,7 +142,9 @@ class QueryBuilder {
 		if (!$data) {return;}
 		if (!isset($data[0])) {$data = [$data];}
 		foreach ($data as $k => &$v) {
-			foreach ($v as $key => $value) {if (!isset($this->schema[$key])) {unset($v[$key]);}} //删除无效数据
+			foreach ($v as $key => &$value) {
+				if (!isset($this->schema[$key])) {unset($v[$key]);} else {if (in_array($this->schema[$key]['type'], ['array', 'object'])) {$value = json_encode($value, 256);}}
+			} //删除无效数据
 			if ($k == 0) {$keys = '(`' . implode("`,`", array_keys($v)) . '`)';}
 			$values[] = '(' . implode(",", array_fill(0, count($v), '?')) . ')';
 			$this->option['execute'] = array_merge($this->option['execute'], array_values($v));
