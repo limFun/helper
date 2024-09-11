@@ -72,8 +72,7 @@ class Db {
 	}
 	public static function __callStatic($method, $argv) {
 		self::init();
-		$res = call_user_func_array([new QueryBuilder, $method], $argv);
-		return $res;
+		return call_user_func_array([new QueryBuilder, $method], $argv);
 	}
 }
 class QueryBuilder {
@@ -81,10 +80,8 @@ class QueryBuilder {
 	private $option = ['debug' => false, 'field' => '*', 'table' => '', 'where' => '1', 'group' => '', 'order' => '', 'limit' => '', 'lock' => '', 'sql' => '', 'execute' => []];
 	public function __call($method, $argv) {
 		switch (strtolower($method)) {
-		case 'schema':
-			return $this->schema;
-		case 'debug':
-			$this->option['debug'] = true;
+		case 'schema':return $this->schema;
+		case 'debug':$this->option['debug'] = true;
 			break;
 		case 'table':
 			$this->option['table'] = $argv[0];
@@ -94,11 +91,9 @@ class QueryBuilder {
 			$this->option['table'] = Db::$config['prefix'] . $argv[0];
 			$this->schema = config('model.' . $argv[0]);
 			break;
-		case 'field':
-			$this->option['field'] = $argv[0] ?? '*';
+		case 'field':$this->option['field'] = $argv[0] ?? '*';
 			break;
-		case 'limit':
-			$this->option['limit'] = ' LIMIT ' . (isset($argv[1]) ? $argv[0] . ',' . $argv[1] : $argv[0]);
+		case 'limit':$this->option['limit'] = ' LIMIT ' . (isset($argv[1]) ? $argv[0] . ',' . $argv[1] : $argv[0]);
 			break;
 		case 'page':
 			$page = $argv[0] < 2 ? 0 : $argv[0] - 1;
@@ -106,28 +101,21 @@ class QueryBuilder {
 			$offset = $page * $limit;
 			$this->option['limit'] = " LIMIT $offset,$limit";
 			break;
-		case 'order':
-			$this->option['order'] = ' ORDER BY ' . $argv[0];
+		case 'order':$this->option['order'] = ' ORDER BY ' . $argv[0];
 			break;
-		case 'group':
-			$this->option['group'] = ' GROUP BY ' . $argv[0];
+		case 'group':$this->option['group'] = ' GROUP BY ' . $argv[0];
 			break;
-		case 'where':
-			$this->parseWhere('AND', ...$argv);
+		case 'where':$this->parseWhere('AND', ...$argv);
 			break;
-		case 'orwhere':
-			$this->parseWhere('OR', ...$argv);
+		case 'orwhere':$this->parseWhere('OR', ...$argv);
 			break;
-		case 'sql':
-			$this->option['sql'] = $argv[0];
+		case 'sql':$this->option['sql'] = $argv[0];
 			break;
-		case 'sum':case 'max':case 'min':case 'avg':
-			if (!isset($argv[0])) {return NULL;}
+		case 'sum':case 'max':case 'min':case 'avg':if (!isset($argv[0])) {return NULL;}
 		case 'count':
 			$this->option['sql'] = "SELECT {$method}(" . ($argv[0] ?? '*') . ") as result FROM {$this->option['table']} WHERE {$this->option['where']}";
 			return $this->execute()->fetch()['result'];
-		default:
-			break;
+		default:break;
 		}
 		return $this;
 	}
@@ -227,17 +215,13 @@ class QueryBuilder {
 	private function parseResult(&$res = []) {
 		foreach ($res as $k => &$v) {
 			switch ($this->schema[$k]['type'] ?? null) {
-			case 'array':
-				$v = $v ? (array) json_decode($v, true) : [];
+			case 'array':$v = $v ? (array) json_decode($v, true) : [];
 				break;
-			case 'json':
-				$v = $v ? (object) json_decode($v, true) : new \stdclass();
+			case 'json':$v = $v ? (object) json_decode($v, true) : new \stdclass();
 				break;
-			case 'string':
-				$v ??= '';
+			case 'string':$v ??= '';
 				break;
-			default:
-				break;
+			default:break;
 			}
 		}
 	} //解析结果
