@@ -33,6 +33,7 @@ class Check {
 		case 'is_ip':case 'is_email':case 'is_url':case 'is_int':case 'is_float':case 'is_bool':return filter_var($var, self::$fliter[$method]) === false ? false : true;
 		case 'is_required':case 'is_set':return !empty($argv);
 		case 'is_card':case 'is_phone':return preg_match(self::$pattern[$method], (string) $var);
+		case 'is_json':return is_array($var);
 		case 'min':case 'max':return $this->{'_' . $method}(...$argv);
 		case 'stop':empty($this->errors) ? '' : apiErr($this->errors[0]);
 		default:return true;
@@ -72,6 +73,7 @@ class Check {
 			'numeric' => '必须为数字',
 			'string' => '必须为字符串',
 			'array' => '必须为数组',
+			'json' => '必须为JSON',
 			'object' => '必须为对象',
 			'bool' => '必须为布尔值',
 			'null' => '必须为NULL',

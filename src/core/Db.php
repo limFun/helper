@@ -143,7 +143,7 @@ class QueryBuilder {
 		if (!isset($data[0])) {$data = [$data];}
 		foreach ($data as $k => &$v) {
 			foreach ($v as $key => &$value) {
-				if (!isset($this->schema[$key])) {unset($v[$key]);} else {if (in_array($this->schema[$key]['type'], ['array', 'object'])) {$value = json_encode($value, 256);}}
+				if (!isset($this->schema[$key])) {unset($v[$key]);} else {if (in_array($this->schema[$key]['type'], ['array', 'json'])) {$value = json_encode($value, 256);}}
 			} //删除无效数据
 			if ($k == 0) {$keys = '(`' . implode("`,`", array_keys($v)) . '`)';}
 			$values[] = '(' . implode(",", array_fill(0, count($v), '?')) . ')';
@@ -160,7 +160,7 @@ class QueryBuilder {
 	public function update($data = []) {
 		foreach ($data as $k => $v) {
 			if (!isset($this->schema[$k])) {continue;} //清理无效数据
-			if (in_array($this->schema[$k]['type'], ['array', 'object'])) {$v = json_encode($v, 256);} //json数据序列化
+			if (in_array($this->schema[$k]['type'], ['array', 'json'])) {$v = json_encode($v, 256);} //json数据序列化
 			if ($this->option['where'] == '1' && $k == 'id') {
 				$this->option['where'] = ' id = ' . $v;
 				continue;
@@ -237,7 +237,7 @@ class QueryBuilder {
 			case 'array':
 				$v = $v ? (array) json_decode($v, true) : [];
 				break;
-			case 'object':
+			case 'json':
 				$v = $v ? (object) json_decode($v, true) : new \stdclass();
 				break;
 			case 'string':
