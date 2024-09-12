@@ -7,7 +7,7 @@ class Console {
 		array_shift($o);
 		$method = array_shift($o);
 		switch ($method) {
-		case 'dev':shell_exec('php -S 0.0.0.0:' . env('APP_PORT', 9999) . ' -t ' . ROOT_PATH . '/public');
+		case 'dev':shell_exec('php -S 0.0.0.0:' . env('APP_PORT', 11111) . ' -t ' . ROOT_PATH . '/public');
 			break;
 		case 'fn':
 			$fn = array_shift($o);

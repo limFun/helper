@@ -64,12 +64,8 @@ class Db {
 		file_put_contents(ROOT_PATH . 'config/model.php', $configContent);
 		loger('缓存数据库schema成功');
 	}
-	public static function commit() {
-		return self::$pdo->commit();
-	}
-	public static function rollback() {
-		return self::$pdo->rollback();
-	}
+	public static function commit() {return self::$pdo->commit();}
+	public static function rollback() {return self::$pdo->rollback();}
 	public static function __callStatic($method, $argv) {
 		self::init();
 		return call_user_func_array([new QueryBuilder, $method], $argv);

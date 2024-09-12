@@ -11,83 +11,40 @@ class Server {
 
 	protected $pm = null;
 
-	function __construct() {
-
-	}
-
 	public static function fpm() {
-		header('Access-Control-Allow-Origin:*');
-		header('Access-Control-Allow-Methods:*');
-		header('Access-Control-Allow-Headers:*');
-		header('Content-Type:application/json;charset=utf-8');
-
-		$uri = substr($_SERVER['REQUEST_URI'], 1);
-
-		if (!in_array($_SERVER['REQUEST_METHOD'], ['POST', 'GET'])) {
-			return;
-		}
-
 		try {
-			if (str_contains($uri, '?')) {
-				[$uri, $get] = explode('?', $uri);
-			}
-			$res = explode('/', $uri);
-			if (count($res) != 2) {apiErr('路由错误');}
-			[$class, $method] = $res;
-			$obj = '\\app\\route\\' . $class;
-			if (($_SERVER['CONTENT_TYPE'] ?? null) === 'application/json') {
-				$data = json_decode(file_get_contents('php://input'), true);
+			$pathArr = explode('/', Request::path());
+			if (count($pathArr) === 2) {
+				$obj = '\\app\\route\\' . $pathArr[0];
+				Response::success($obj::init()->__before()->register($pathArr[1], Request::all()));
 			} else {
-				$data = array_merge($_GET, $_POST);
+				Response::html('lim');
 			}
-			$result = $obj::init()->__before()->register($method, $data);
-			echo json_encode(['code' => 200, 'message' => 'success', 'result' => $result]);
-
 		} catch (\Exception $e) {
-			echo json_encode(['code' => $e->getCode(), 'message' => $e->getMessage()]);
+			Response::error($e->getMessage(), $e->getCode());
 		}
 	}
 
 	public static function run() {
-
 		cli_set_process_title('Manager');
-
 		$pm = new Manager();
-
 		$pm->add(function (Pool $pool, int $workerId) {
 			cli_set_process_title('CoServer');
-			$server = new CoServer('0.0.0.0', (int) env('APP_PORT', 9999), false);
+			$server = new CoServer('0.0.0.0', (int) env('APP_PORT', 11111), false);
 			$server->handle('/', function ($request, $response) {
 				Coroutine::getContext()['request'] = $request;
-				$response->header('Access-Control-Allow-Origin', '*');
-				$response->header('Access-Control-Allow-Methods', '*');
-				$response->header('Access-Control-Allow-Headers', '*');
-				$response->header('Content-Type', 'application/json;charset=utf-8');
-
-				if ($request->server['path_info'] == '/favicon.ico' || $request->server['request_uri'] == '/favicon.ico') {
-					$response->end();
-					return;
-				}
-
+				Coroutine::getContext()['response'] = $response;
+				if ($request->server['path_info'] == '/favicon.ico') {return $response->end();}
 				try {
-					$uri = substr($request->server['path_info'], 1);
-
-					$res = explode('/', $uri);
-
-					if (count($res) != 2) {
-						apiErr('路由错误');
+					$pathArr = explode('/', Request::path());
+					if (count($pathArr) === 2) {
+						$obj = '\\app\\route\\' . $pathArr[0];
+						Response::success($obj::init()->__before()->register($pathArr[1], Request::all()));
+					} else {
+						Response::html('lim');
 					}
-
-					[$class, $method] = $res;
-
-					$obj = '\\app\\route\\' . $class;
-
-					$data = array_merge($request->get ?? [], $request->post ?? []);
-
-					$result = $obj::init()->__before()->register($method, $data);
-					$response->end(json_encode(['code' => 200, 'message' => 'success', 'result' => $result]));
 				} catch (\Exception $e) {
-					$response->end(json_encode(['code' => $e->getCode(), 'message' => $e->getMessage()]));
+					return Response::error($e->getMessage(), $e->getCode());
 				}
 			});
 			$server->start();
