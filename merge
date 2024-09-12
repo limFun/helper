@@ -2,52 +2,41 @@
 <?
 declare(strict_types=1);
 !defined('ROOT_PATH') && define('ROOT_PATH', __DIR__ . '/');
+spl_autoload_register();
 
-
-	 function pf($path = '', $call = null, &$files = []) {
-		if (is_dir($path)) {
-			$dp = dir($path);
-			while ($file = $dp->read()) {
-				if ($file != "." && $file != "..") {
-					pf($path . "/" . $file, $call, $files); //递归
+	function ff($dir, $call = null) {
+		$result = [];
+		if (is_dir($dir)) {
+			$files = scandir($dir);
+			foreach ($files as $file) {
+				if ($file == '.' || $file == '..') {continue;}
+				$filePath = $dir . DIRECTORY_SEPARATOR . $file;
+				if (is_dir($filePath)) {
+					$result = array_merge($result, ff($filePath, $call));
+				} elseif (is_file($filePath)) {
+					if ($call) {$call($filePath, $result);} else { $result[] = $filePath;}
 				}
 			}
-			$dp->close();
 		}
-		if (is_file($path)) {
-			$call ? $call($path) : array_push($files, $path);
-		}
-		return $files ?? [];
+		return $result;
 	}
 
 
-$tmp="<?\ndeclare (strict_types = 1);\nnamespace lim;\n";
 
-$f =pf(ROOT_PATH . 'src');
+$GLOBALS['tmp'] = "<?\ndeclare (strict_types = 1);\nnamespace{\n!defined('ROOT_PATH') && define('ROOT_PATH', __DIR__ . '/');\nspl_autoload_register();\n";
+//加载公共函数
+ff(ROOT_PATH.'src',function($e){
+	if (str_contains($e,'functions.php')) {
+		$t = file_get_contents($e);
+		$GLOBALS['tmp'].=str_replace(["<?","declare (strict_types = 1);"], '', $t)."if(PHP_SAPI == 'cli'){lim\Console::run(\$argv);}}";	
+	}
+});
+
+//加载核心类
+$f=ff(ROOT_PATH.'src/core');
 foreach ($f as $file) {
-			$t = file_get_contents($file);
-			$tmp.=str_replace(["<?","declare (strict_types = 1);",'namespace lim;'], '', $t);
+	$t = file_get_contents($file);
+	$GLOBALS['tmp'].="\nnamespace lim {\n".str_replace(["<?","declare (strict_types = 1);",'namespace lim;'], '', $t)."}\n";
 }
 
-print_r($tmp);
-file_put_contents(__DIR__.'/out.php', $tmp);
-
-// <?
-// declare (strict_types = 1);
-
-// namespace {
-// 	// 全局代码
-// 	use MyProject\Connection;
-
-// 	echo $a = MyProject\connect();
-// 	Connection::tt();
-// }
-// namespace MyProject {
-// 	const CONNECT_OK = 1;
-// 	class Connection {
-// 		public static function tt($value = '') {
-// 			echo time();
-// 		}
-// 	}
-// 	function connect() {return time();}
-// }
+file_put_contents(__DIR__.'/out.php', $GLOBALS['tmp']);

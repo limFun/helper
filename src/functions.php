@@ -29,6 +29,22 @@ if (!function_exists('loger')) {
 function curr($v) {return \Swoole\Coroutine::getContext()[$v];}
 function check($data = [], $rule = []) {return lim\Check::data($data)->rule($rule);}
 function http($value = '') {return lim\Http::url($value);}
+function ff($dir, $call = null) {
+	$result = [];
+	if (is_dir($dir)) {
+		$files = scandir($dir);
+		foreach ($files as $file) {
+			if ($file == '.' || $file == '..') {continue;}
+			$filePath = $dir . DIRECTORY_SEPARATOR . $file;
+			if (is_dir($filePath)) {
+				$result = array_merge($result, ff($filePath, $call));
+			} elseif (is_file($filePath)) {
+				if ($call) {$call($filePath, $result);} else { $result[] = $filePath;}
+			}
+		}
+	}
+	return $result;
+}
 if (!function_exists('config')) {
 	function config($key = '') {return lim\Config::get($key);}
 }
@@ -46,5 +62,4 @@ function redis() {
 	return $redis;
 }
 function apiErr($message = '', $code = 300) {throw new limApiErr($message, $code);}
-function json($data = [], $message = "success", $code = 200) {die(json_encode(['code' => $code, 'message' => $message, 'result' => $data]));}
 lim\Config::init();

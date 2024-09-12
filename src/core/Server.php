@@ -20,7 +20,7 @@ class Server {
 			} else {
 				Response::html('lim');
 			}
-		} catch (\Exception $e) {
+		} catch (\Throwable $e) {
 			Response::error($e->getMessage(), $e->getCode());
 		}
 	}
@@ -43,7 +43,7 @@ class Server {
 					} else {
 						Response::html('lim');
 					}
-				} catch (\Exception $e) {
+				} catch (\Throwable $e) {
 					return Response::error($e->getMessage(), $e->getCode());
 				}
 			});
