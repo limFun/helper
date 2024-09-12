@@ -71,6 +71,7 @@ class Db {
 		return call_user_func_array([new QueryBuilder, $method], $argv);
 	}
 }
+
 class QueryBuilder {
 	private $schema = [];
 	private $option = ['debug' => false, 'field' => '*', 'table' => '', 'where' => '1', 'group' => '', 'order' => '', 'limit' => '', 'lock' => '', 'sql' => '', 'execute' => []];
@@ -231,5 +232,30 @@ class QueryBuilder {
 		foreach ($this->schema as $k => $v) {$rule[$v['commit'] . '|' . $k] = $v['type'];}
 		check($data, $rule)->stop();
 		return $this;
+	}
+}
+
+class PdoConnecter {
+
+	public function __construct(public $option = []) {
+
+	}
+
+	public function run() {
+		$dsn = "mysql:host={$this->option['host']};dbname={$this->option['database']};port={$this->option['port']};charset={$this->option['charset']}";
+		$opt = [
+			PDO::ATTR_DEFAULT_FETCH_MODE => $this->option['fetch_mode'] ?? PDO::FETCH_ASSOC,
+			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+			PDO::ATTR_STRINGIFY_FETCHES => false,
+			PDO::ATTR_EMULATE_PREPARES => false, // 这2个是跟数字相关的设置
+			PDO::ATTR_TIMEOUT => $this->option['timeout'],
+			// PDO::ATTR_PERSISTENT=>true,
+		];
+
+		$pool = new \Stdclass;
+		$pool->handler = new \PDO($dsn, $this->option['username'], $this->option['password'], $opt);
+		$pool->create = time();
+		return $pool;
+
 	}
 }
