@@ -57,23 +57,19 @@ class Check {
 		return $this;
 	}
 	private function _min($value = '', $append = '', $name = '', $status = false) {
-		if (is_numeric($value)) {$value < $append ? $this->errors[] = $name . '的值必须大于' . $append : $status = true;}
-		if (is_string($value)) {strlen($value) < $append ? $this->errors[] = $name . '的长度必须大于' . $append : $status = true;}
+		if (is_string($value)) {strlen($value) < $append ? $this->errors[] = $name . '的长度必须大于' . $append : $status = true;} elseif (is_numeric($value)) {$value < $append ? $this->errors[] = $name . '的值必须大于' . $append : $status = true;}
 		return $status;
 	}
 	private function _max($value = '', $append = '', $name = '', $status = false) {
-		if (is_numeric($value)) {$value > $append ? $this->errors[] = $name . '的值必须小于' . $append : $status = true;}
-		if (is_string($value)) {strlen($value) > $append ? $this->errors[] = $name . '的长度必须小于' . $append : $status = true;}
+		if (is_string($value)) {strlen($value) > $append ? $this->errors[] = $name . '的长度必须小于' . $append : $status = true;} elseif (is_numeric($value)) {$value > $append ? $this->errors[] = $name . '的值必须小于' . $append : $status = true;}
 		return $status;
 	}
 	private function _size($value = '', $append = '', $name = '', $status = false) {
 		if (strpos((string) $append, ',') !== false) {
 			[$min, $max] = explode(',', $append);
-			if (is_numeric($value)) {($value < $min || $value > $max) ? $this->errors[] = $name . '的值必须>=' . $min . '且<=' . $max : $status = true;}
-			if (is_string($value)) {(strlen($value) < $min || strlen($value) > $max) ? $this->errors[] = $name . '的长度必须>=' . $min . '且<=' . $max : $status = true;}
+			if (is_string($value)) {(strlen($value) < $min || strlen($value) > $max) ? $this->errors[] = $name . '的长度必须>=' . $min . '且<=' . $max : $status = true;} elseif (is_numeric($value)) {($value < $min || $value > $max) ? $this->errors[] = $name . '的值必须>=' . $min . '且<=' . $max : $status = true;}
 		} else {
-			if (is_numeric($value)) {$value != $append ? $this->errors[] = $name . '的值必须等于' . $append : $status = true;}
-			if (is_string($value)) {strlen($value) != $append ? $this->errors[] = $name . '的长度必须等于' . $append : $status = true;}
+			if (is_string($value)) {strlen($value) != $append ? $this->errors[] = $name . '的长度必须等于' . $append : $status = true;} elseif (is_numeric($value)) {$value != $append ? $this->errors[] = $name . '的值必须等于' . $append : $status = true;}
 		}
 		return $status;
 	}
