@@ -13,7 +13,7 @@ class Router {
 		if ($rule = $this->rule[$m] ?? null) {check($o, $rule)->stop();}
 		if ($h = $this->call[$m] ?? null) {
 			if ($h[2] ?? null) {
-				$token = $_SERVER['HTTP_TOKEN'] ?? '';
+				$token = Request::header('token');
 				if (!token($token, true)) {apiErr('请登录');}
 			}
 			return $h[0]::{$h[1]}($o);
