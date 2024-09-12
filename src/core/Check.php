@@ -34,7 +34,7 @@ class Check {
 		case 'is_required':case 'is_set':return !empty($argv);
 		case 'is_card':case 'is_phone':return preg_match(self::$pattern[$method], (string) $var);
 		case 'is_json':return is_array($var);
-		case 'min':case 'max':return $this->{'_' . $method}(...$argv);
+		case 'min':case 'max':case 'size':return $this->{'_' . $method}(...$argv);
 		case 'stop':empty($this->errors) ? '' : apiErr($this->errors[0]);
 		default:return true;
 		}
@@ -42,7 +42,7 @@ class Check {
 	public function rule($rule = []) {
 		foreach ($rule as $k => $v) {
 			[$name, $key] = strpos($k, '|') === false ? [$k, $k] : explode('|', $k);
-			$rules = explode('|', $v);
+			$rules = explode('|', (string) $v);
 			if (isset($this->data[$key])) {
 				foreach ($rules as $ruler) {
 					if (strpos($ruler, ':') !== false) {
@@ -57,13 +57,24 @@ class Check {
 		return $this;
 	}
 	private function _min($value = '', $append = '', $name = '', $status = false) {
-		is_numeric($value) && $value < $append ? $this->errors[] = $name . '的值必须大于' . $append : $status = true;
-		is_string($value) && strlen($value) < $append ? $this->errors[] = $name . '的长度必须大于' . $append : $status = true;
+		if (is_numeric($value)) {$value < $append ? $this->errors[] = $name . '的值必须大于' . $append : $status = true;}
+		if (is_string($value)) {strlen($value) < $append ? $this->errors[] = $name . '的长度必须大于' . $append : $status = true;}
 		return $status;
 	}
 	private function _max($value = '', $append = '', $name = '', $status = false) {
-		is_numeric($value) && $value > $append ? $this->errors[] = $name . '的值必须小于' . $append : $status = true;
-		is_string($value) && strlen($value) > $append ? $this->errors[] = $name . '的长度必须小于' . $append : $status = true;
+		if (is_numeric($value)) {$value > $append ? $this->errors[] = $name . '的值必须小于' . $append : $status = true;}
+		if (is_string($value)) {strlen($value) > $append ? $this->errors[] = $name . '的长度必须小于' . $append : $status = true;}
+		return $status;
+	}
+	private function _size($value = '', $append = '', $name = '', $status = false) {
+		if (strpos((string) $append, ',') !== false) {
+			[$min, $max] = explode(',', $append);
+			if (is_numeric($value)) {($value < $min || $value > $max) ? $this->errors[] = $name . '的值必须>=' . $min . '且<=' . $max : $status = true;}
+			if (is_string($value)) {(strlen($value) < $min || strlen($value) > $max) ? $this->errors[] = $name . '的长度必须>=' . $min . '且<=' . $max : $status = true;}
+		} else {
+			if (is_numeric($value)) {$value != $append ? $this->errors[] = $name . '的值必须等于' . $append : $status = true;}
+			if (is_string($value)) {strlen($value) != $append ? $this->errors[] = $name . '的长度必须等于' . $append : $status = true;}
+		}
 		return $status;
 	}
 	private function parseMessage($status = false, $name = '', $rule = '', $append = '') {
