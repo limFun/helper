@@ -11,7 +11,7 @@ class Db {
 		if (self::$pool == null) {
 			$c = config('db');
 			foreach ($c as $k => $v) {
-				self::$pool[$k] = PHP_SAPI == 'cli' ? Pool::init(fn() => new PdoConnecter($v)) : (new PdoConnecter($v))->run();
+				self::$pool[$k] = PHP_SAPI == 'cli' ? Pool::init(fn() => new PdoHandler($v)) : (new PdoHandler($v))->run();
 			}
 		}
 		self::$connection = $connection;
@@ -99,7 +99,7 @@ class QueryBuilder {
 	public function __destruct() {
 		if (PHP_SAPI == 'cli') {
 			Db::init($this->option['connection'])->push(Db::connection($this->option['connection']));
-			loger('DB __destruct');
+			// loger('DB __destruct');
 		}
 	}
 	public function __call($method, $argv) {
@@ -264,7 +264,7 @@ class QueryBuilder {
 	}
 }
 
-class PdoConnecter {
+class PdoHandler {
 
 	public function __construct(public $option = []) {
 

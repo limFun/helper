@@ -26,7 +26,7 @@ if (!function_exists('loger')) {
 		} else {echo json_encode($v);}
 	}
 }
-function curr($v) {return \Swoole\Coroutine::getContext()[$v];}
+function curr($v) {return \lim\Context::get($v);}
 function check($data = [], $rule = []) {return lim\Check::data($data)->rule($rule);}
 function http($value = '') {return lim\Http::url($value);}
 function ff($dir, $call = null) {

@@ -2,7 +2,6 @@
 declare (strict_types = 1);
 namespace lim;
 use function Swoole\Coroutine\run;
-use Swoole\Coroutine;
 use Swoole\Coroutine\Http\Server as CoServer;
 use Swoole\Process\Manager;
 use Swoole\Process\Pool;
@@ -32,8 +31,8 @@ class Server {
 			cli_set_process_title('CoServer');
 			$server = new CoServer('0.0.0.0', (int) env('APP_PORT', 11111), false);
 			$server->handle('/', function ($request, $response) {
-				Coroutine::getContext()['request'] = $request;
-				Coroutine::getContext()['response'] = $response;
+				Context::set('request', $request);
+				Context::set('response', $response);
 				if ($request->server['path_info'] == '/favicon.ico') {return $response->end();}
 				try {
 					$pathArr = explode('/', Request::path());
@@ -44,8 +43,9 @@ class Server {
 						Response::html('lim');
 					}
 				} catch (\Throwable $e) {
-					return Response::error($e->getMessage(), $e->getCode());
+					Response::error($e->getMessage(), $e->getCode());
 				}
+				Context::clear();
 			});
 			$server->start();
 
