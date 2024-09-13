@@ -11,7 +11,7 @@ class Console {
 			break;
 		case 'fn':
 			$fn = array_shift($o);
-			$fn(...$o);
+			run(fn() => $fn(...$o));
 			break;
 		case 'dbcache':Db::schema();
 			break;

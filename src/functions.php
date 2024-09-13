@@ -54,6 +54,15 @@ if (!function_exists('env')) {
 		return $r ? $r : $default;
 	}
 }
+function run(callable $fn, ...$args) {
+	$s = new \Swoole\Coroutine\Scheduler();
+	$options = \Swoole\Coroutine::getOptions();
+	if (!isset($options['hook_flags'])) {
+		$s->set(['hook_flags' => SWOOLE_HOOK_ALL]);
+	}
+	$s->add($fn, ...$args);
+	return $s->start();
+}
 function redis() {
 	$redis = new \Redis;
 	$c = config('redis');

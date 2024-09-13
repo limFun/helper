@@ -3,6 +3,7 @@ declare (strict_types = 1);
 namespace lim;
 
 class Model {
+	protected $connection = 'default';
 	protected $table = '';
 	protected $db;
 	protected $data = [];
@@ -14,7 +15,7 @@ class Model {
 				$this->table .= ctype_upper($name[$i]) && $i > 0 ? '_' . strtolower($name[$i]) : strtolower($name[$i]);
 			}
 		}
-		$this->db = Db::table($this->table);
+		$this->db = Db::table($this->table, $this->connection);
 		$this->data = $data;
 	}
 	public static function __callStatic($method, $argv) {

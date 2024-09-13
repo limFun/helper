@@ -17,8 +17,8 @@ class Pool {
 	public static function init($call) {
 		$curr = new self();
 		$curr->call = $call();
-		$curr->exprie = $curr->call->option['poolExpire'];
-		$curr->size = $curr->call->option['poolSize'];
+		$curr->exprie = $curr->call->option['poolExpire'] ?? 60;
+		$curr->size = $curr->call->option['poolSize'] ?? 10;
 		$curr->pool = new \Swoole\Coroutine\Channel($curr->size);
 		return $curr;
 	}

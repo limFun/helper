@@ -22,6 +22,7 @@
         ],
         "psr-4": {
             "lim\\": "src/core",
+            "lim\\request\\": "src/core/request",
             "app\\": "app"
         }
     },

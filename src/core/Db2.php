@@ -4,104 +4,77 @@ namespace lim;
 use PDO;
 use PDOException;
 
-class Db {
-	public static $pool;
-	public static $connection = 'default';
-	public static function init($connection = 'default') {
-		if (self::$pool == null) {
-			$c = config('db');
-			foreach ($c as $k => $v) {
-				self::$pool[$k] = PHP_SAPI == 'cli' ? Pool::init(fn() => new PdoConnecter($v)) : new PdoConnecter($v);
+class Db2 {
+	public static $config = [];
+	public static $pdo;
+	public static function init() {
+		if (!self::$config) {self::$config = config('db.default');}
+		if (!self::$pdo) {
+			$dsn = "mysql:host=" . self::$config['host'] . ";dbname=" . self::$config['database'] . ";port=" . self::$config['port'];
+			$option = [
+				PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+				PDO::ATTR_CASE => PDO::CASE_NATURAL,
+				PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+				PDO::ATTR_EMULATE_PREPARES => false, //解析数据库类型
+				PDO::ATTR_STRINGIFY_FETCHES => false,
+			];
+			try {
+				self::$pdo = new PDO($dsn, self::$config['username'], self::$config['password'], $option);
+			} catch (PDOException $e) {
+				apiErr("连接数据库失败: " . $e->getMessage());
 			}
 		}
-		self::$connection = $connection;
-		return self::$pool[$connection];
 	}
-
-	public static function connection($connection = 'default') {
-		if (PHP_SAPI == 'cli') {
-			if (!$pdo = Context::get('pdo' . $connection)) {
-				$pdo = self::init($connection)->pull();
-				Context::set('pdo' . $connection, $pdo);
-			}
-			return $pdo;
-		} else {
-			return self::$pool[$connection];
-		}
-	}
-	public static function transaction($connection = 'default', $call = null) {
-		self::init($connection);
+	public static function transaction($call = null) {
+		self::init();
 		if ($call) {
-			self::connection(self::$connection)->pdo->beginTransaction();
+			self::$pdo->beginTransaction();
 			try {
 				$call();
-				self::connection(self::$connection)->pdo->commit();
+				self::$pdo->commit();
 			} catch (PDOException $e) {
 				loger($e->getMessage());
-				self::connection(self::$connection)->pdo->rollback();
+				self::$pdo->rollback();
 			}
-			self::init(self::$connection)->push(self::connection(self::$connection));
-			self::$connection = 'default';
 		} else {
-			self::connection(self::$connection)->pdo->beginTransaction();
+			return self::$pdo->beginTransaction();
 		}
 	}
 	public static function schema() {
 		self::init();
+		$sql = "SELECT TABLE_NAME,COLUMN_NAME,DATA_TYPE,COLUMN_COMMENT FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '" . self::$config['database'] . "' ORDER BY TABLE_NAME ASC,ORDINAL_POSITION ASC ";
+		$res = self::$pdo->query($sql)->fetchall();
 		$config = [];
-		foreach (config('db') as $con => $d) {
-			$sql = "SELECT TABLE_NAME,COLUMN_NAME,DATA_TYPE,COLUMN_COMMENT FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '" . $d['database'] . "' ORDER BY TABLE_NAME ASC,ORDINAL_POSITION ASC ";
-			$res = self::connection($con)->pdo->query($sql)->fetchall();
-
-			foreach ($res as $k => $v) {
-				switch ($v['DATA_TYPE']) {
-				case 'int':case 'bigint':case 'tinyint':case 'decimal':$type = 'numeric';
-					break;
-				case 'varchar':case 'text':$type = 'string';
-					break;
-				default:$type = $v['DATA_TYPE'];
-					break;
-				}
-				$commit = empty($v['COLUMN_COMMENT']) ? $v['COLUMN_NAME'] : $v['COLUMN_COMMENT'];
-				if (str_contains($commit, '|')) {
-					[$commit, $type] = explode('|', $commit);
-				}
-				$config[$con][$v['TABLE_NAME']][$v['COLUMN_NAME']] = ['type' => $type, 'commit' => $commit];
+		foreach ($res as $k => $v) {
+			switch ($v['DATA_TYPE']) {
+			case 'int':case 'bigint':case 'tinyint':case 'decimal':$type = 'numeric';
+				break;
+			case 'varchar':case 'text':$type = 'string';
+				break;
+			default:$type = $v['DATA_TYPE'];
+				break;
 			}
+			$commit = empty($v['COLUMN_COMMENT']) ? $v['COLUMN_NAME'] : $v['COLUMN_COMMENT'];
+			if (str_contains($commit, '|')) {
+				[$commit, $type] = explode('|', $commit);
+			}
+			$config[$v['TABLE_NAME']][$v['COLUMN_NAME']] = ['type' => $type, 'commit' => $commit];
 		}
-
-		$configContent = "<?\nreturn " . str_replace(['{', '}', ':'], ['[', ']', '=>'], json_encode($config, 256)) . ";\n";
+		$configContent = "<?php\nreturn " . str_replace(['{', '}', ':'], ['[', ']', '=>'], json_encode($config, 256)) . ";\n";
 		file_put_contents(ROOT_PATH . 'config/model.php', $configContent);
 		loger('缓存数据库schema成功');
 	}
-	public static function commit() {
-		self::connection(self::$connection)->pdo->commit();
-		self::init(self::$connection)->push(self::connection(self::$connection));
-		self::$connection = 'default';
-	}
-	public static function rollback() {
-		self::connection(self::$connection)->pdo->rollback();
-		self::init(self::$connection)->push(self::connection(self::$connection));
-		self::$connection = 'default';
-	}
-
+	public static function commit() {return self::$pdo->commit();}
+	public static function rollback() {return self::$pdo->rollback();}
 	public static function __callStatic($method, $argv) {
 		self::init();
 		return call_user_func_array([new QueryBuilder, $method], $argv);
 	}
 }
 
-class QueryBuilder {
-	private $handler;
+class QueryBuilder2 {
 	private $schema = [];
-	private $option = ['connection' => 'default', 'debug' => false, 'field' => '*', 'table' => '', 'where' => '1', 'group' => '', 'order' => '', 'limit' => '', 'lock' => '', 'sql' => '', 'execute' => []];
-
-	public function __destruct() {
-		if (PHP_SAPI == 'cli') {
-			Db::init($this->option['connection'])->push(Db::connection($this->option['connection']));
-			loger('DB __destruct');
-		}
-	}
+	private $option = ['debug' => false, 'field' => '*', 'table' => '', 'where' => '1', 'group' => '', 'order' => '', 'limit' => '', 'lock' => '', 'sql' => '', 'execute' => []];
 	public function __call($method, $argv) {
 		switch (strtolower($method)) {
 		case 'schema':return $this->schema;
@@ -109,13 +82,11 @@ class QueryBuilder {
 			break;
 		case 'table':
 			$this->option['table'] = $argv[0];
-			$this->option['connection'] = $argv[1] ?? 'default';
-			$this->schema = config('model.' . $this->option['connection'] . '.' . $argv[0]);
+			$this->schema = config('model.' . $argv[0]);
 			break;
 		case 'name':
-			$this->option['connection'] = $argv[1] ?? 'default';
-			$this->option['table'] = config('db.' . $this->option['connection'] . '.prefix') . $argv[0];
-			$this->schema = config('model.' . $this->option['connection'] . '.' . $argv[0]);
+			$this->option['table'] = Db::$config['prefix'] . $argv[0];
+			$this->schema = config('model.' . $argv[0]);
 			break;
 		case 'field':$this->option['field'] = $argv[0] ?? '*';
 			break;
@@ -158,7 +129,7 @@ class QueryBuilder {
 		}
 		$this->option['sql'] = "INSERT INTO `{$this->option['table']}` $keys VALUES " . implode(',', $values);
 		$h = $this->execute();
-		return $id ? Db::connection($this->option['connection'])->pdo->lastInsertId() : $h;
+		return $id ? Db::$pdo->lastInsertId() : $h;
 	}
 	public function delete($id = null) {
 		$this->option['sql'] = $id ? "DELETE FROM {$this->option['table']} WHERE id = $id" : "DELETE FROM {$this->option['table']} WHERE {$this->option['where']}";
@@ -253,7 +224,7 @@ class QueryBuilder {
 	} //解析结果
 	public function execute() {
 		if ($this->option['debug']) {return loger($this);}
-		$h = Db::connection($this->option['connection'])->pdo->prepare($this->option['sql']);
+		$h = Db::$pdo->prepare($this->option['sql']);
 		$h->execute($this->option['execute']);
 		return $h;
 	} //执行查询
@@ -264,7 +235,7 @@ class QueryBuilder {
 	}
 }
 
-class PdoConnecter {
+class PdoConnecter2 {
 
 	public function __construct(public $option = []) {
 
@@ -282,9 +253,8 @@ class PdoConnecter {
 		];
 
 		$pool = new \Stdclass;
+		$pool->handler = new \PDO($dsn, $this->option['username'], $this->option['password'], $opt);
 		$pool->create = time();
-		$pool->database = $this->option['database'];
-		$pool->pdo = new \PDO($dsn, $this->option['username'], $this->option['password'], $opt);
 		return $pool;
 
 	}
