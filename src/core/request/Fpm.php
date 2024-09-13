@@ -9,7 +9,6 @@ class Fpm {
 			$i = strtolower($k);
 			$this->data[$i] = $v;
 		}
-		print_r($this);
 	}
 	public function __call($method, $argv) {
 		switch (strtolower($method)) {

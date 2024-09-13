@@ -11,7 +11,7 @@ class Db {
 		if (self::$pool == null) {
 			$c = config('db');
 			foreach ($c as $k => $v) {
-				self::$pool[$k] = PHP_SAPI == 'cli' ? Pool::init(fn() => new PdoConnecter($v)) : new PdoConnecter($v);
+				self::$pool[$k] = PHP_SAPI == 'cli' ? Pool::init(fn() => new PdoConnecter($v)) : (new PdoConnecter($v))->run();
 			}
 		}
 		self::$connection = $connection;
