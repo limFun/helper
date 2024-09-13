@@ -31,6 +31,7 @@ class Pool {
 	}
 
 	public function pull($time = -1) {
+		pull:
 		if ($this->pool->isEmpty() && $this->num < $this->size) {$this->make();}
 		// if ($this->num <= 0) {$this->make();}
 
@@ -40,7 +41,7 @@ class Pool {
 
 		if ($p->create + $this->exprie < time()) {
 			loger($p->create . '过期丢弃');
-			return $this->pull();
+			goto pull;
 		}
 		return $p;
 	}
