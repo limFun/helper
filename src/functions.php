@@ -23,7 +23,9 @@ if (!function_exists('loger')) {
 			if (is_array($v) || is_object($v)) {$v = print_r($v, true);}
 			$str = '\\033[36m[' . date('H:i:s') . '] ' . $color[$type];
 			echo shell_exec('echo -e -n "' . $str . '"') . $v . PHP_EOL;
-		} else {echo json_encode($v);}
+		} else {
+			// echo json_encode($v);
+		}
 	}
 }
 function curr($v) {return \lim\Context::get($v);}

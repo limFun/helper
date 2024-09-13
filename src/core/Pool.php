@@ -40,7 +40,7 @@ class Pool {
 			$this->make();
 		}
 
-		// loger($this->num);
+		// loger('pool pull ' . $this->num);
 
 		$p = $this->pool->pop(-1);
 		$this->num--;
@@ -56,6 +56,7 @@ class Pool {
 		if ($call !== null) {
 			$this->pool->push($call);
 			$this->num++;
+			// loger('pool push ' . $this->num);
 		}
 	}
 

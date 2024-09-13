@@ -8,10 +8,6 @@ class Response {
 	}
 	public function __call($method, $argv) {
 		switch (strtolower($method)) {
-		case 'html':
-			break;
-		case 'json':
-			break;
 		case 'send':
 			break;
 		default:

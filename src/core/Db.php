@@ -266,9 +266,7 @@ class QueryBuilder {
 
 class PdoHandler {
 
-	public function __construct(public $option = []) {
-
-	}
+	public function __construct(public $option = []) {}
 
 	public function run() {
 		$dsn = "mysql:host={$this->option['host']};dbname={$this->option['database']};port={$this->option['port']};charset={$this->option['charset']}";
