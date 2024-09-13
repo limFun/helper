@@ -13,7 +13,7 @@ class Console {
 			$fn = array_shift($o);
 			run(fn() => $fn(...$o));
 			break;
-		case 'dbcache':Db::schema();
+		case 'dbcache':run(fn() => Db::schema());
 			break;
 		case 'server':Server::run();
 			break;
