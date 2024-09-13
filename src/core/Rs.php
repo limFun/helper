@@ -8,7 +8,7 @@ class Rs {
 		if (self::$pool == null) {
 			$c = config('redis');
 			foreach ($c as $k => $v) {
-				self::$pool[$k] = PHP_SAPI == 'cli' ? Pool::init(fn() => new RedisHandler($v)) : (new RedisHandler($v))->run();
+				self::$pool[$k] = PHP_SAPI == 'cli' ? Pool::init(fn() => new RedisHandler($v)) : (new RedisHandler($v))->init();
 			}
 			loger('redis init');
 		}
@@ -170,7 +170,7 @@ class RedisHandler {
 
 	public function __construct(public $option = []) {}
 
-	public function run() {
+	public function init() {
 		$redis = new \Redis();
 		$redis->connect($this->option['host'], (int) $this->option['port']);
 		if ($this->option['auth']) {

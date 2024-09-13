@@ -18,4 +18,7 @@ class Context {
 	static function clear(): void {
 		unset(self::$pool[Coroutine::getCid()]);
 	}
+	static function delete($key): void {
+		unset(self::$pool[Coroutine::getCid()][$key]);
+	}
 }

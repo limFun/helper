@@ -11,7 +11,7 @@ class Db {
 		if (self::$pool == null) {
 			$c = config('db');
 			foreach ($c as $k => $v) {
-				self::$pool[$k] = PHP_SAPI == 'cli' ? Pool::init(fn() => new PdoHandler($v)) : (new PdoHandler($v))->run();
+				self::$pool[$k] = PHP_SAPI == 'cli' ? Pool::init(fn() => new PdoHandler($v)) : (new PdoHandler($v))->init();
 			}
 		}
 		self::$connection = $connection;
@@ -32,18 +32,19 @@ class Db {
 	public static function transaction($connection = 'default', $call = null) {
 		self::init($connection);
 		if ($call) {
-			self::connection(self::$connection)->pdo->beginTransaction();
+			self::connection(self::$connection)->handler->beginTransaction();
 			try {
 				$call();
-				self::connection(self::$connection)->pdo->commit();
+				self::connection(self::$connection)->handler->commit();
 			} catch (PDOException $e) {
 				loger($e->getMessage());
-				self::connection(self::$connection)->pdo->rollback();
+				self::connection(self::$connection)->handler->rollback();
 			}
 			self::init(self::$connection)->push(self::connection(self::$connection));
+			Context::delete('pdo' . self::$connection);
 			self::$connection = 'default';
 		} else {
-			self::connection(self::$connection)->pdo->beginTransaction();
+			self::connection(self::$connection)->handler->beginTransaction();
 		}
 	}
 	public static function schema() {
@@ -51,7 +52,7 @@ class Db {
 		$config = [];
 		foreach (config('db') as $con => $d) {
 			$sql = "SELECT TABLE_NAME,COLUMN_NAME,DATA_TYPE,COLUMN_COMMENT FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '" . $d['database'] . "' ORDER BY TABLE_NAME ASC,ORDINAL_POSITION ASC ";
-			$res = self::connection($con)->pdo->query($sql)->fetchall();
+			$res = self::connection($con)->handler->query($sql)->fetchall();
 
 			foreach ($res as $k => $v) {
 				switch ($v['DATA_TYPE']) {
@@ -75,13 +76,15 @@ class Db {
 		loger('缓存数据库schema成功');
 	}
 	public static function commit() {
-		self::connection(self::$connection)->pdo->commit();
+		self::connection(self::$connection)->handler->commit();
 		self::init(self::$connection)->push(self::connection(self::$connection));
+		Context::delete('pdo' . self::$connection);
 		self::$connection = 'default';
 	}
 	public static function rollback() {
-		self::connection(self::$connection)->pdo->rollback();
+		self::connection(self::$connection)->handler->rollback();
 		self::init(self::$connection)->push(self::connection(self::$connection));
+		Context::delete('pdo' . self::$connection);
 		self::$connection = 'default';
 	}
 
@@ -99,7 +102,7 @@ class QueryBuilder {
 	public function __destruct() {
 		if (PHP_SAPI == 'cli') {
 			Db::init($this->option['connection'])->push(Db::connection($this->option['connection']));
-			// loger('DB __destruct');
+			Context::delete('pdo' . $this->option['connection']);
 		}
 	}
 	public function __call($method, $argv) {
@@ -158,7 +161,7 @@ class QueryBuilder {
 		}
 		$this->option['sql'] = "INSERT INTO `{$this->option['table']}` $keys VALUES " . implode(',', $values);
 		$h = $this->execute();
-		return $id ? Db::connection($this->option['connection'])->pdo->lastInsertId() : $h;
+		return $id ? Db::connection($this->option['connection'])->handler->lastInsertId() : $h;
 	}
 	public function delete($id = null) {
 		$this->option['sql'] = $id ? "DELETE FROM {$this->option['table']} WHERE id = $id" : "DELETE FROM {$this->option['table']} WHERE {$this->option['where']}";
@@ -253,7 +256,7 @@ class QueryBuilder {
 	} //解析结果
 	public function execute() {
 		if ($this->option['debug']) {return loger($this);}
-		$h = Db::connection($this->option['connection'])->pdo->prepare($this->option['sql']);
+		$h = Db::connection($this->option['connection'])->handler->prepare($this->option['sql']);
 		$h->execute($this->option['execute']);
 		return $h;
 	} //执行查询
@@ -268,7 +271,7 @@ class PdoHandler {
 
 	public function __construct(public $option = []) {}
 
-	public function run() {
+	public function init() {
 		$dsn = "mysql:host={$this->option['host']};dbname={$this->option['database']};port={$this->option['port']};charset={$this->option['charset']}";
 		$opt = [
 			PDO::ATTR_DEFAULT_FETCH_MODE => $this->option['fetch_mode'] ?? PDO::FETCH_ASSOC,
@@ -282,7 +285,7 @@ class PdoHandler {
 		$pool = new \Stdclass;
 		$pool->create = time();
 		$pool->database = $this->option['database'];
-		$pool->pdo = new \PDO($dsn, $this->option['username'], $this->option['password'], $opt);
+		$pool->handler = new \PDO($dsn, $this->option['username'], $this->option['password'], $opt);
 		return $pool;
 
 	}
