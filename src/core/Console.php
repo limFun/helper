@@ -7,16 +7,13 @@ class Console {
 		array_shift($o);
 		$method = array_shift($o);
 		switch ($method) {
-		case 'dev':shell_exec('php -S 0.0.0.0:' . env('APP_PORT', 11111) . ' -t ' . ROOT_PATH . '/public');
-			break;
+		case 'dev':return shell_exec('php -S 0.0.0.0:' . env('APP_PORT', 11111) . ' -t ' . ROOT_PATH . '/public');
 		case 'fn':
 			$fn = array_shift($o);
 			run(fn() => $fn(...$o));
 			break;
-		case 'dbcache':run(fn() => Db::schema());
-			break;
-		case 'server':Server::run();
-			break;
+		case 'dbcache':return run(fn() => Db::schema());
+		case 'server':return Server::run();
 		case 'task':
 			$c = array_shift($o) ?? '';
 			if (str_contains($c, '.')) {
