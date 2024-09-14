@@ -9,7 +9,11 @@ class Server {
 
 	protected $option = null;
 
+	public static $store;
+
 	public static function run() {
+		self::$store = new \Stdclass;
+		self::$store->time = time();
 		(new self)->server()->watch()->handler->start();
 	}
 
@@ -90,9 +94,10 @@ class Server {
 	public function message($server, $frame) {Message::parse($server, $frame);}
 
 	public function close($server, $fd, $reactorId) {
-		$uid = redis()->zscore('message:user', $fd);
-		redis()->zrem('message:user', $fd);
-		loger("用户{$uid} => {$fd} 下线");
+		// loger($fd);
+		// $uid = redis()->zscore('message:user', $fd);
+		// redis()->zrem('message:user', $fd);
+		// loger("用户{$uid} => {$fd} 下线");
 	}
 
 }
