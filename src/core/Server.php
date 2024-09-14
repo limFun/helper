@@ -10,13 +10,12 @@ class Server {
 	protected $option = null;
 
 	public static function run() {
-		(new self)->http()->watch()->handler->start();
+		(new self)->server()->watch()->handler->start();
 	}
 
 	public function watch() {
 		$proces = new Process(function () {
-			cli_set_process_title($this->option['name'] . '-Watcher');
-			$lt = time();
+			cli_set_process_title($this->option['name'] . '-Watcher'); $lt = time();
 			while (true) {
 				ff(ROOT_PATH . 'app', function ($f) use (&$lt) {
 					if (filemtime($f) > $lt) {
@@ -24,15 +23,13 @@ class Server {
 						$lt = time();
 						$this->handler->reload();
 					}
-				});
-				sleep(1);
+				}); sleep(1);
 			}
 		}, false, 1, true);
-		$this->handler->addProcess($proces);
-		return $this;
+		$this->handler->addProcess($proces);return $this;
 	}
 
-	public function http() {
+	public function server() {
 		$this->option = config('service');
 		$this->handler = new \Swoole\WebSocket\Server('0.0.0.0', $this->option['port'], SWOOLE_PROCESS);
 		$this->handler->set($this->option['option']);
@@ -57,7 +54,7 @@ class Server {
 	public function managerStart() {cli_set_process_title($this->option['name'] . '-Manager');}
 	public function beforeReload() {}
 	public function afterReload() {}
-	public function workerStart(\Swoole\Server $server, int $workerId) {cli_set_process_title($this->option['name'] . '-Worker-' . $workerId);}
+	public function workerStart($server, $workerId) {cli_set_process_title($this->option['name'] . '-Worker-' . $workerId);}
 
 	public function request($request, $response) {
 		$response->header('Server', 'LimServer');
