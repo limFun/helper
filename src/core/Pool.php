@@ -23,34 +23,24 @@ class Pool {
 		return $curr;
 	}
 
-	public function make($num = 1) {
+	public function make() {
 		$this->pool->push($this->call->init());
 		$this->num++;
-		// loger('创建填充' . $this->num);
 		return $this;
 	}
 
 	public function pull($time = -1) {
-		pull:
-		if ($this->pool->isEmpty() && $this->num < $this->size) {$this->make();}
-		// if ($this->num <= 0) {$this->make();}
-
-		// loger('pool pull ' . $this->num);
-		$p = $this->pool->pop($time);
+		pull: if ($this->pool->isEmpty() && $this->num < $this->size) {$this->make();}
+		$handler = $this->pool->pop($time);
 		$this->num--;
-
-		if ($p->create + $this->exprie < time()) {
-			loger($p->create . '过期丢弃');
-			goto pull;
-		}
-		return $p;
+		if ($handler->create + $this->exprie < time()) {goto pull;}
+		return $handler;
 	}
 
 	public function push($call = null) {
 		if ($call !== null) {
 			$this->pool->push($call);
 			$this->num++;
-			// loger('pool push ' . $this->num);
 		}
 	}
 

@@ -9,22 +9,6 @@ class Server {
 
 	protected $option = null;
 
-	protected $pm = null;
-
-	public static function fpm() {
-		try {
-			$pathArr = explode('/', Request::path());
-			if (count($pathArr) === 2) {
-				$obj = '\\app\\route\\' . $pathArr[0];
-				Response::success($obj::init()->__before()->register($pathArr[1], Request::all()));
-			} else {
-				Response::html('lim');
-			}
-		} catch (\Throwable $e) {
-			Response::error($e->getMessage(), $e->getCode());
-		}
-	}
-
 	public static function run() {
 		(new self)->http()->watch()->start();
 	}
@@ -44,9 +28,7 @@ class Server {
 				sleep(1);
 			}
 		}, false, 1, true);
-
 		$this->handler->addProcess($proces);
-
 		return $this;
 	}
 
@@ -83,9 +65,7 @@ class Server {
 		// loger($this->option['name'] . '-Worker BeforeReload');
 	}
 
-	public function onAfterReload() {
-		// loger('onAfterReload ' . config('server.name'));
-	}
+	public function onAfterReload() {}
 
 	public function onWorkerStart(\Swoole\Server $server, int $workerId) {
 		cli_set_process_title($this->option['name'] . '-Worker-' . $workerId);
@@ -97,9 +77,14 @@ class Server {
 
 	public function onRequest($request, $response) {
 		$response->header('Server', 'LimServer');
+		if ($request->server['path_info'] == '/favicon.ico') {return $response->end();}
 		Context::set('request', $request);
 		Context::set('response', $response);
-		if ($request->server['path_info'] == '/favicon.ico') {return $response->end();}
+		self::response();
+		Context::clear();
+	}
+
+	public static function response() {
 		try {
 			$pathArr = explode('/', Request::path());
 			if (count($pathArr) === 2) {
@@ -111,7 +96,6 @@ class Server {
 		} catch (\Throwable $e) {
 			Response::error($e->getMessage(), $e->getCode());
 		}
-		Context::clear();
 	}
 
 	public function onOpen($server, $request) {

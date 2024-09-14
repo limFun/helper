@@ -65,12 +65,6 @@ function run(callable $fn, ...$args) {
 	$s->add($fn, ...$args);
 	return $s->start();
 }
-function redis() {
-	$redis = new \Redis;
-	$c = config('redis');
-	$redis->connect($c['host'], (int) $c['port']);
-	if ($c['auth']) {$redis->auth($c['auth']);}
-	return $redis;
-}
+function redis($connection = 'default') {return \lim\Rs::connection($connection);}
 function apiErr($message = '', $code = 300) {throw new limApiErr($message, $code);}
 lim\Config::init();
