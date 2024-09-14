@@ -10,7 +10,7 @@ class Server {
 	protected $option = null;
 
 	public static function run() {
-		(new self)->http()->watch()->start();
+		(new self)->http()->watch()->handler->start();
 	}
 
 	public function watch() {
@@ -36,50 +36,35 @@ class Server {
 		$this->option = config('service');
 		$this->handler = new \Swoole\WebSocket\Server('0.0.0.0', $this->option['port'], SWOOLE_PROCESS);
 		$this->handler->set($this->option['option']);
-		$this->handler->on('start', array($this, 'onStart'));
-		$this->handler->on('managerstart', array($this, 'onManagerstart'));
-		$this->handler->on('beforeReload', array($this, 'onBeforeReload'));
-		$this->handler->on('afterReload', array($this, 'onAfterReload'));
-		$this->handler->on('workerStart', array($this, 'onWorkerStart'));
-		$this->handler->on('request', array($this, 'onRequest'));
-		$this->handler->on('open', array($this, 'onOpen'));
-		$this->handler->on('message', array($this, 'onMessage'));
+		$on = [
+			'start' => 'start',
+			'managerStart' => 'managerStart',
+			'beforeReload' => 'beforeReload',
+			'afterReload' => 'afterReload',
+			'workerStart' => 'workerStart',
+			'request' => 'request',
+			'open' => 'open',
+			'message' => 'message',
+			'close' => 'close',
+		];
+		foreach (array_merge($on, $this->option['on'] ?? []) as $on => $call) {
+			$this->handler->on($on, is_array($call) ? $call : [$this, $call]);
+		}
 		return $this;
 	}
 
-	public function start() {
-		$this->handler->start();
-	}
+	public function start() {cli_set_process_title($this->option['name'] . '-Server');}
+	public function managerStart() {cli_set_process_title($this->option['name'] . '-Manager');}
+	public function beforeReload() {}
+	public function afterReload() {}
+	public function workerStart(\Swoole\Server $server, int $workerId) {cli_set_process_title($this->option['name'] . '-Worker-' . $workerId);}
 
-	public function onStart() {
-		cli_set_process_title($this->option['name'] . '-Server');
-		loger($this->option['name'] . '-Server Start');
-	}
-
-	public function onManagerstart() {
-		cli_set_process_title($this->option['name'] . '-Manager');
-	}
-
-	public function onBeforeReload() {
-		// Helper::import('config,env');
-		// loger($this->option['name'] . '-Worker BeforeReload');
-	}
-
-	public function onAfterReload() {}
-
-	public function onWorkerStart(\Swoole\Server $server, int $workerId) {
-		cli_set_process_title($this->option['name'] . '-Worker-' . $workerId);
-		// loger($this->option['name'] . '-Worker' . $workerId . ' Start');
-		// loger(get_included_files());
-		// Helper::import('helper,api');
-
-	}
-
-	public function onRequest($request, $response) {
+	public function request($request, $response) {
 		$response->header('Server', 'LimServer');
 		if ($request->server['path_info'] == '/favicon.ico') {return $response->end();}
 		Context::set('request', $request);
 		Context::set('response', $response);
+		Context::set('server', $this->handler);
 		self::response();
 		Context::clear();
 	}
@@ -98,13 +83,19 @@ class Server {
 		}
 	}
 
-	public function onOpen($server, $request) {
-		loger($request);
+	public function open($server, $request) {
+		if ($user = token($request->get['token'], true)) {
+			redis()->zadd('message:user', $user['id'], $request->fd);
+			loger("用户{$user['id']} => {$request->fd} 上线");
+		}
 	}
 
-	public function onMessage($server, $frame) {
-		loger($frame);
-		$server->push($frame->fd, $frame->data);
+	public function message($server, $frame) {Message::parse($server, $frame);}
+
+	public function close($server, $fd, $reactorId) {
+		$uid = redis()->zscore('message:user', $fd);
+		redis()->zrem('message:user', $fd);
+		loger("用户{$uid} => {$fd} 下线");
 	}
 
 }

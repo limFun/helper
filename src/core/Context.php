@@ -6,6 +6,9 @@ use Swoole\Coroutine;
 
 class Context {
 	protected static $pool = [];
+	public static function store() {
+		return PHP_SAPI == 'cli' ? self::$pool[Coroutine::getCid()] : self::$pool;
+	}
 	static function get(string $key) {
 		return self::$pool[Coroutine::getCid()][$key] ?? null;
 	}
