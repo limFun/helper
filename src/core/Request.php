@@ -55,7 +55,7 @@ class RequestParse {
 		case 'all':return array_merge($this->data['get'], $this->data['post']);
 		case 'path':return substr($this->data['server']['path_info'], 1);
 		case 'file':$this->data['files'];
-		case 'header':case:'server':
+		case 'header':case 'server':
 			$key = $argv[0] ?? null;
 			$value = $argv[1] ?? null;
 			return $key ? $this->data[$method][$key] ?? $value : $this->data[$method];
