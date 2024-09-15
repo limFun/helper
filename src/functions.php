@@ -28,6 +28,7 @@ if (!function_exists('loger')) {
 		}
 	}
 }
+function request() {return new \lim\RequestParse();}
 function curr($v) {return \lim\Context::get($v);}
 function check($data = [], $rule = []) {return lim\Check::data($data)->rule($rule);}
 function http($value = '') {return lim\Http::url($value);}
