@@ -49,14 +49,12 @@ class RequestParse {
 	}
 
 	public function __call($method, $argv) {
+		$key = $argv[0] ?? null;
+		$value = $argv[1] ?? null;
 		switch (strtolower($method)) {
-		case 'get':return $this->data['get'];
-		case 'post':return $this->data['post'];
 		case 'all':return array_merge($this->data['get'], $this->data['post']);
 		case 'path':return substr($this->data['server']['path_info'], 1);
-		case 'files':case 'header':case 'server':
-			$key = $argv[0] ?? null;
-			$value = $argv[1] ?? null;
+		case 'get':case 'post':case 'files':case 'header':case 'server':
 			return $key ? $this->data[$method][$key] ?? $value : $this->data[$method];
 		default:return $this;
 
