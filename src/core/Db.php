@@ -248,8 +248,8 @@ class QueryBuilder {
 				break;
 			case 'json':$v = $v ? (object) json_decode($v, true) : new \stdclass();
 				break;
-			case 'string':$v ??= '';
-				break;
+			// case 'string':$v ??= '';
+			// 	break;
 			default:break;
 			}
 		}
