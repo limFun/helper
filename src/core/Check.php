@@ -14,7 +14,7 @@ class Check {
 		'is_bool' => FILTER_VALIDATE_BOOLEAN,
 	];
 	protected static $pattern = [
-		'is_card' => '/^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))((0[1-9])|([1-2][0-9])|(3[0-1]))\d{3}[0-9Xx]$/',
+		'is_idcard' => '/^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))((0[1-9])|([1-2][0-9])|(3[0-1]))\d{3}[0-9Xx]$/',
 		'is_phone' => '/^1[3-9]\d{9}$/',
 	];
 	public static function __callStatic($method, $argv) {
@@ -32,7 +32,7 @@ class Check {
 		case 'is_numeric':case 'is_string':case 'is_array':case 'is_object':case 'is_null':return $method($var);
 		case 'is_ip':case 'is_email':case 'is_url':case 'is_int':case 'is_float':case 'is_bool':return filter_var($var, self::$fliter[$method]) === false ? false : true;
 		case 'is_required':case 'is_set':return !empty($argv);
-		case 'is_card':case 'is_phone':return preg_match(self::$pattern[$method], (string) $var);
+		case 'is_idcard':case 'is_phone':return preg_match(self::$pattern[$method], (string) $var);
 		case 'is_json':return is_array($var);
 		case 'min':case 'max':case 'size':return $this->{'_' . $method}(...$argv);
 		case 'stop':empty($this->errors) ? '' : apiErr($this->errors[0]);
@@ -85,10 +85,10 @@ class Check {
 			'bool' => '必须为布尔值',
 			'null' => '必须为NULL',
 			'ip' => '必须为IP地址',
-			'email' => '必须为邮箱地址',
-			'url' => '必须为URL地址',
-			'card' => '必须为身份证号码',
-			'phone' => '必须为手机号',
+			'email' => '错误',
+			'url' => '错误',
+			'idcard' => '错误',
+			'phone' => '错误',
 			default => '',
 		};
 	}
