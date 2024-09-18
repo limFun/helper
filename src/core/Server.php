@@ -70,7 +70,7 @@ class Server {
 			$response->header('Access-Control-Allow-Origin', '*');
 			$response->header('Access-Control-Allow-Methods', '*');
 			$response->header('Access-Control-Allow-Headers', '*');
-			$response->end();
+			return $response->end();
 		}
 		self::response();
 		Context::clear();
