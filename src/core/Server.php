@@ -62,10 +62,16 @@ class Server {
 
 	public function request($request, $response) {
 		$response->header('Server', 'LimServer');
-		if ($request->server['path_info'] == '/favicon.ico') {return $response->end();}
+
 		Context::set('request', $request);
 		Context::set('response', $response);
 		Context::set('server', $this->handler);
+		if ($request->server['path_info'] == '/favicon.ico' || $request->server['request_method'] == 'OPTIONS') {
+			$response->header('Access-Control-Allow-Origin', '*');
+			$response->header('Access-Control-Allow-Methods', '*');
+			$response->header('Access-Control-Allow-Headers', '*');
+			$response->end();
+		}
 		self::response();
 		Context::clear();
 	}
