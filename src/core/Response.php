@@ -3,17 +3,6 @@ declare (strict_types = 1);
 namespace lim;
 
 class Response {
-	public static function __callStatic($method, $argv) {
-		return (new static )->$method();
-	}
-	public function __call($method, $argv) {
-		switch (strtolower($method)) {
-		case 'send':
-			break;
-		default:
-			break;
-		}
-	}
 
 	public static function html($result = '') {
 		if (PHP_SAPI == 'cli') {
@@ -48,5 +37,11 @@ class Response {
 
 	public static function error($message = '', $code = 300) {
 		self::json(['code' => $code, 'message' => $message]);
+	}
+
+	public static function view($info) {
+		// print_r([debug_backtrace(), $info]);
+		$html = file_get_contents(ROOT_PATH . 'app/view/admin/aa.html');
+		die($html);
 	}
 }
