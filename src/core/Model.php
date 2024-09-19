@@ -22,8 +22,10 @@ class Model {
 		switch (strtolower($method)) {
 		case 'h':case 'query':
 			return new static(...$argv);
-		case 'create':case 'delete':case 'update':case 'list':case 'detail':
+		case 'create':case 'delete':case 'update':case 'detail':
 			return self::h(...$argv)->check($method)->{$method . 'Before'}()->{$method . 'Doing'}()->{$method . 'After'}();
+		case 'list':
+			return self::h(...$argv)->{$method . 'Before'}()->{$method . 'Doing'}()->{$method . 'After'}();
 		default:
 			return call_user_func_array([self::h()->db, $method], $argv);
 		}
@@ -49,7 +51,7 @@ class Model {
 		case 'listdoing':
 			$page = array_shifter($this->data, 'page', 1);
 			$limit = array_shifter($this->data, 'limit', 10);
-			$this->result['count'] = $this->db->count('id');
+			$this->result['count'] = $this->db->count('*');
 			$this->result['list'] = $this->db->page($page, $limit)->select();
 			break;
 		case 'detaildoing':$this->result = $this->db->where($this->data)->find();
