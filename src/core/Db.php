@@ -148,8 +148,18 @@ class QueryBuilder {
 		}
 		return $this;
 	}
+	public function incr(string $key = '', int $num = 1): mixed {
+		if (!$key || !isset($this->schema[$key])) {return null;}
+		$this->option['sql'] = "UPDATE {$this->option['table']} SET `{$key}` = `{$key}` + {$num} WHERE {$this->option['where']}";
+		return $this->execute()->errorCode() == '00000' ? true : false;
+	}
+	public function decr(string $key = '', int $num = 1): mixed {
+		if (!$key || !isset($this->schema[$key])) {return null;}
+		$this->option['sql'] = "UPDATE {$this->option['table']} SET `{$key}` = `{$key}` - {$num} WHERE {$this->option['where']}";
+		return $this->execute()->errorCode() == '00000' ? true : false;
+	}
 	public function insert($data = [], $id = false) {
-		if (!$data) {return;}
+		if (!$data) {return null;}
 		if (!isset($data[0])) {$data = [$data];}
 		foreach ($data as $k => &$v) {
 			foreach ($v as $key => &$value) {
@@ -178,10 +188,7 @@ class QueryBuilder {
 			$sets[] = "`$k`=?";
 			$execute[] = $v;
 		}
-		if (isset($this->schema['update_at'])) {
-			$sets[] = "`update_at`=?";
-			$execute[] = time();
-		}
+		if (!isset($sets)) {return null;}
 		$this->option['execute'] = array_merge($execute ?? [], $this->option['execute']); //组合参数
 		$set = implode(',', $sets);
 		$this->option['sql'] = "UPDATE `{$this->option['table']}` SET {$set} WHERE " . $this->option['where'];
@@ -256,6 +263,7 @@ class QueryBuilder {
 	} //解析结果
 	public function execute() {
 		if ($this->option['debug']) {return loger($this);}
+		// loger($this);
 		$h = Db::connection($this->option['connection'])->handler->prepare($this->option['sql']);
 		$h->execute($this->option['execute']);
 		return $h;
