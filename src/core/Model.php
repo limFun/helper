@@ -10,6 +10,7 @@ class Model {
 	public $result = [];
 	function __construct($data = []) {
 		if (!$this->table) {
+			$this->table = config('db.' . $this->connection . '.prefix');
 			$name = basename(str_replace('\\', '/', static::class)); //解析数据表
 			for ($i = 0; $i < strlen($name); $i++) {
 				$this->table .= ctype_upper($name[$i]) && $i > 0 ? '_' . strtolower($name[$i]) : strtolower($name[$i]);
