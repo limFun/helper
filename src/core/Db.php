@@ -231,11 +231,11 @@ class QueryBuilder {
 			return $n == 1 ? $res : array_column($res, $value);
 		}
 	}
-	private function parseWhere($un = 'AND', $a = null, $b = null, $c = null) {
+	private function parseWhere($un = 'AND', $a = null, $b = '@value', $c = null) {
 		if ($c !== null) {
 			$this->option['where'] .= " $un `$a` $b ?";
 			$this->option['execute'][] = $c;
-		} elseif ($b) {
+		} elseif ($b !== '@value') {
 			$this->option['where'] .= " $un `$a` = ?";
 			$this->option['execute'][] = $b;
 		} else {
