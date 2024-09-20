@@ -196,29 +196,31 @@ class QueryBuilder {
 	}
 	public function select() {
 		$this->option['sql'] = "SELECT {$this->option['field']} FROM {$this->option['table']} WHERE {$this->option['where']}{$this->option['group']}{$this->option['order']}{$this->option['limit']}{$this->option['lock']}";
-		if ($res = $this->execute()->fetchAll()) {
+
+		if ($res = $this->execute()?->fetchAll()) {
 			foreach ($res as $k => &$v) {$this->parseResult($v);}
 		}
 		return $res;
 	}
 	public function find($id = null) {
 		$this->option['sql'] = $id ? "SELECT {$this->option['field']} FROM `{$this->option['table']}` WHERE id = $id" : "SELECT {$this->option['field']} FROM `{$this->option['table']}` WHERE {$this->option['where']}{$this->option['order']} LIMIT 1";
-		if ($res = $this->execute()->fetch()) {
+		if ($res = $this->execute()?->fetch()) {
 			$this->parseResult($res);
 		}
 		return $res;
 	}
 	public function value($column) {
 		$this->option['sql'] = "SELECT {$column} FROM `{$this->option['table']}` WHERE {$this->option['where']}{$this->option['order']} LIMIT 1";
-		$res = $this->execute()->fetch();
+		$res = $this->execute()?->fetch();
 		$this->parseResult($res);
 		return $res[$column];
 	}
+
 	public function column($value = '', $key = null) {
 		$field = $key ? $key . ',' . $value : $value;
 		$n = substr_count($field, ',');
 		$this->option['sql'] = "SELECT {$field} FROM {$this->option['table']} WHERE {$this->option['where']}{$this->option['group']}{$this->option['order']}{$this->option['limit']}{$this->option['lock']}";
-		$res = $this->execute()->fetchAll();
+		$res = $this->execute()?->fetchAll();
 		foreach ($res as $k => &$v) {$this->parseResult($v);}
 		if ($key) {
 			$tmp = [];
@@ -231,21 +233,33 @@ class QueryBuilder {
 			return $n == 1 ? $res : array_column($res, $value);
 		}
 	}
-	private function parseWhere($un = 'AND', $a = null, $b = '@value', $c = null) {
-		if ($c !== null) {
-			$this->option['where'] .= " $un `$a` $b ?";
-			$this->option['execute'][] = $c;
-		} elseif ($b !== '@value') {
-			$this->option['where'] .= " $un `$a` = ?";
-			$this->option['execute'][] = $b;
-		} else {
-			if (is_string($a)) {$this->option['where'] .= " $un " . $a;} //原生
-			if (is_array($a)) {
-				foreach ($a as $k => $v) {
-					$this->option['where'] .= " $un `$k` = ?";
-					$this->option['execute'][] = $v;
+	private function parseWhere() {
+		$v = func_get_args(); //连接符 字段 比较符号 值
+		switch (count($v)) {
+		case 4:
+			$this->option['where'] .= " {$v[0]} `{$v[1]}` {$v[2]} ?";
+			$this->option['execute'][] = $v[3];
+			break;
+		case 3:
+			$this->option['where'] .= " {$v[0]} `{$v[1]}` = ?";
+			$this->option['execute'][] = $v[2];
+			break;
+		case 2:
+			//原生条件语句
+			if (is_string($v[1])) {
+				$this->option['where'] .= " {$v[0]} " . $v[1];
+			}
+			//数组条件语句
+			if (is_array($v[1])) {
+				foreach ($v[1] as $k => $value) {
+					$this->option['where'] .= " {$v[0]} `$k` = ?";
+					$this->option['execute'][] = $value;
 				}
-			} //数组
+			}
+			break;
+		default:
+			// code...
+			break;
 		}
 	} //解析条件
 	private function parseResult(&$res = []) {
