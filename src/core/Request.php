@@ -64,7 +64,7 @@ class Request {
 	}
 
 	public static function path() {
-		return PHP_SAPI == 'cli' ? substr(curr('request')->server['path_info'], 1) : substr($_SERVER['PATH_INFO'], 1);
+		return PHP_SAPI == 'cli' ? substr(curr('request')->server['path_info'], 1) : substr($_SERVER['PATH_INFO'] ?? '/', 1);
 	}
 
 	public static function method() {
