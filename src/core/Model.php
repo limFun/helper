@@ -100,7 +100,20 @@ class Model {
 		return $this->result;
 	}
 
+	public function save() {
+
+	}
+
 	public function __call($method, $argv) {
 		return $this;
 	}
+
+	public function __set($k, $v) {
+		$this->result[$k] = $v;
+	}
+
+	public function __get($k) {
+		return $this->result->$k ?? null;
+	}
+
 }
