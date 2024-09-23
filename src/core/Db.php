@@ -67,7 +67,8 @@ class Db {
 				if (str_contains($commit, '|')) {
 					[$commit, $type] = explode('|', $commit);
 				}
-				$config[$con][$v['TABLE_NAME']][$v['COLUMN_NAME']] = ['type' => $type, 'commit' => $commit];
+				// $config[$con][$v['TABLE_NAME']][$v['COLUMN_NAME']] = ['type' => $type, 'commit' => $commit];
+				$config[$con][$v['TABLE_NAME']][$v['COLUMN_NAME']] = [$type, $commit];
 			}
 		}
 
@@ -163,7 +164,7 @@ class QueryBuilder {
 		if (!isset($data[0])) {$data = [$data];}
 		foreach ($data as $k => &$v) {
 			foreach ($v as $key => &$value) {
-				if (!isset($this->schema[$key])) {unset($v[$key]);} else {if (in_array($this->schema[$key]['type'], ['array', 'json'])) {$value = json_encode($value, 256);}}
+				if (!isset($this->schema[$key])) {unset($v[$key]);} else {if (in_array($this->schema[$key][0], ['array', 'json'])) {$value = json_encode($value, 256);}}
 			} //删除无效数据
 			if ($k == 0) {$keys = '(`' . implode("`,`", array_keys($v)) . '`)';}
 			$values[] = '(' . implode(",", array_fill(0, count($v), '?')) . ')';
@@ -171,6 +172,7 @@ class QueryBuilder {
 		}
 		$this->option['sql'] = "INSERT INTO `{$this->option['table']}` $keys VALUES " . implode(',', $values);
 		$h = $this->execute();
+
 		return $id ? Db::connection($this->option['connection'])->handler->lastInsertId() : $h;
 	}
 	public function delete($id = null) {
@@ -180,7 +182,7 @@ class QueryBuilder {
 	public function update($data = []) {
 		foreach ($data as $k => $v) {
 			if (!isset($this->schema[$k])) {continue;} //清理无效数据
-			if (in_array($this->schema[$k]['type'], ['array', 'json'])) {$v = json_encode($v, 256);} //json数据序列化
+			if (in_array($this->schema[$k][0], ['array', 'json'])) {$v = json_encode($v, 256);} //json数据序列化
 			if ($this->option['where'] == '1' && $k == 'id') {
 				$this->option['where'] = ' id = ' . $v;
 				continue;
@@ -264,7 +266,7 @@ class QueryBuilder {
 	} //解析条件
 	private function parseResult(&$res = []) {
 		foreach ($res as $k => &$v) {
-			switch ($this->schema[$k]['type'] ?? null) {
+			switch ($this->schema[$k][0]) {
 			case 'array':$v = $v ? (array) json_decode($v, true) : [];
 				break;
 			case 'json':$v = $v ? (object) json_decode($v, true) : new \stdclass();
@@ -283,7 +285,7 @@ class QueryBuilder {
 		return $h;
 	} //执行查询
 	public function check($data = [], $rule = []) {
-		foreach ($this->schema as $k => $v) {$rule[$v['commit'] . '|' . $k] = $v['type'];}
+		foreach ($this->schema as $k => $v) {$rule[$v[1] . '|' . $k] = $v[0];}
 		check($data, $rule)->stop();
 		return $this;
 	}

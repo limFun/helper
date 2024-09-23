@@ -85,7 +85,7 @@ class Model {
 		$rule = [];
 		foreach ($this->db->schema() as $k => $v) {
 			$keyRule = $this->rule[$method][$k] ?? '';
-			$rule[$v['commit'] . '|' . $k] = $v['type'] . '|' . $keyRule;
+			$rule[$v[1] . '|' . $k] = $v[0] . '|' . $keyRule;
 		}
 		check($this->data, $rule)->stop();
 		return $this;
@@ -98,10 +98,6 @@ class Model {
 
 	public function result(): mixed {
 		return $this->result;
-	}
-
-	public function save() {
-
 	}
 
 	public function __call($method, $argv) {

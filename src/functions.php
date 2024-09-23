@@ -3,6 +3,30 @@ declare (strict_types = 1);
 
 class limApiErr extends \Exception {}
 
+class limModelResult extends \Stdclass {
+
+	public static function init($data, $handler) {
+		$result = new self;
+		foreach ($data as $k => $v) {
+			$result->$k = $v;
+		}
+		$result->handler = $handler;
+		return $result;
+	}
+
+	public function save($value = '') {
+		loger($this);
+	}
+
+	public function delete($value = '') {
+		// code...
+	}
+
+	public function update($value = '') {
+		// code...
+	}
+}
+
 if (!function_exists('array_shifter')) {
 	function array_shifter(&$o, $k = '', $v = '') {
 		$t = $o[$k] ?? $v;
@@ -64,11 +88,22 @@ if (!function_exists('run')) {
 	}
 }
 
-if (!function_exists('env')) {function env($key = '', $default = '') {return isset($GLOBALS['env'][$key]) ? $GLOBALS['env'][$key] : $default;}}
-if (!function_exists('config')) {function config($key = '') {return lim\Config::get($key);}}
-if (!function_exists('curr')) {function curr($v) {return \lim\Context::get($v);}}
+if (!function_exists('curr')) {
+	function curr(string $v) {
+		switch ($v) {
+		case 'request':
+		case 'response':
+		case 'server':
+			return \lim\Context::get($v);
+		case 'redis':
+			return \lim\Rs::connection('default');
+		}
+	}
+}
+if (!function_exists('env')) {function env(string $k = '', $v = '') {return isset($GLOBALS['env'][$k]) ? $GLOBALS['env'][$k] : $v;}}
+if (!function_exists('config')) {function config(string $k = '') {return lim\Config::get($k);}}
 if (!function_exists('check')) {function check($data = [], $rule = []) {return lim\Check::data($data)->rule($rule);}}
-if (!function_exists('http')) {function http($value = '') {return lim\Http::url($value);}}
+if (!function_exists('http')) {function http(string $url = '') {return lim\Http::url($url);}}
 if (!function_exists('redis')) {function redis($connection = 'default') {return \lim\Rs::connection($connection);}}
 if (!function_exists('apiErr')) {function apiErr($message = '', $code = 300) {throw new limApiErr($message, $code);}}
 
