@@ -91,10 +91,13 @@ class Server {
 	}
 
 	public function open($server, $request) {
-		if ($user = token($request->get['token'], true)) {
-			redis()->zadd('message:user', $user['id'], $request->fd);
-			loger("用户{$user['id']} => {$request->fd} 上线");
+		if ($token = Request::get('token')) {
+			if ($user = token($token, true)) {
+				redis()->zadd('message:user', $user['id'], $request->fd);
+				loger("用户{$user['id']} => {$request->fd} 上线");
+			}
 		}
+
 	}
 
 	public function message($server, $frame) {Message::parse($server, $frame);}

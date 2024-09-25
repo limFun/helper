@@ -10,7 +10,21 @@ class Message {
 	public static function parse($server, $frame) {
 
 		$data = json_decode($frame->data, true);
-		(new MessageHandler($server))->toUser(8)->content($data);
+		switch ($data['type'] ?? null) {
+		case 'fd':
+			$fd = $data['fd'] ?? null;
+			return $server->push((int) $fd, json_encode([$fd, $data['content']]));
+		case 'all':
+			foreach ($server->connections as $fd) {
+				$server->push((int) $fd, json_encode([$fd, $frame->fd, $data['content']]));
+			}
+			return;
+		default:
+			// code...
+			break;
+		}
+		$server->push($frame->fd, json_encode($frame));
+		// (new MessageHandler($server))->toUser(8)->content($data);
 	}
 }
 
@@ -21,6 +35,10 @@ class MessageHandler {
 	public function getFd($type = '', $uid = '') {
 		$this->fdArr = redis()->ZRANGEBYSCORE('message:' . $type, (string) $uid, (string) $uid);
 		return $this;
+	}
+
+	public function foFd($fd) {
+
 	}
 
 	public function toUser($userId = 0) {return $this->getFd('user', $userId);}
