@@ -9,11 +9,7 @@ class Server {
 
 	protected $option = null;
 
-	public static $store;
-
 	public static function run() {
-		self::$store = new \Stdclass;
-		self::$store->time = time();
 		(new self)->server()->watch()->handler->start();
 	}
 

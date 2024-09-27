@@ -5,6 +5,7 @@ namespace lim;
 class Config {
 
 	public static function init() {
+		if (!is_dir(ROOT_PATH . 'runtime')) {mkdir(ROOT_PATH . 'runtime', 777, true);}
 		//加载环境变量
 		if (is_file(ROOT_PATH . '.env')) {
 			$o = parse_ini_file(ROOT_PATH . '.env');
