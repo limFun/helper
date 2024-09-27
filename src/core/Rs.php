@@ -183,6 +183,5 @@ class RedisHandler {
 		$pool->create = time();
 
 		return $pool;
-
 	}
 }

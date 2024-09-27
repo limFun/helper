@@ -100,6 +100,12 @@ if (!function_exists('curr')) {
 		}
 	}
 }
+if (!function_exists('app')) {
+	function app(string $v) {
+		return \lim\App::run($v);
+	}
+}
+
 if (!function_exists('env')) {function env(string $k = '', $v = '') {return isset($GLOBALS['env'][$k]) ? $GLOBALS['env'][$k] : $v;}}
 if (!function_exists('config')) {function config(string $k = '') {return lim\Config::get($k);}}
 if (!function_exists('check')) {function check($data = [], $rule = []) {return lim\Check::data($data)->rule($rule);}}
