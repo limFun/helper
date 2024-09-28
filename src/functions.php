@@ -3,6 +3,11 @@ declare (strict_types = 1);
 
 class limApiErr extends \Exception {}
 
+class limRoute extends \stdclass
+{
+	function __construct(public $handler, public $method, public $role = null, public $static = false) {}
+}
+
 class limModelResult extends \Stdclass {
 
 	public static function init($data, $handler) {
@@ -114,3 +119,4 @@ if (!function_exists('redis')) {function redis($connection = 'default') {return 
 if (!function_exists('apiErr')) {function apiErr($message = '', $code = 300) {throw new limApiErr($message, $code);}}
 
 lim\Config::init();
+lim\App::init();

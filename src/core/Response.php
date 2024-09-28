@@ -4,6 +4,45 @@ namespace lim;
 
 class Response {
 
+	public static function parse() {
+
+		try {
+
+			$uri = Request::routePath();
+			if ($uri === '/') {return self::html('<h1>less is more</h1>');}
+			//完全路径
+			if ($route = App::get('routePath')[$uri] ?? null) {goto result;}
+
+			$uriArr = explode('/', $uri);
+			$len = count($uriArr);
+			//左匹配
+			if ($len > 2) {
+				if ($route = App::get('routePath')['/' . $uriArr[1] . '/*'] ?? null) {goto result;}
+			}
+			return self::html('<h1>less is more</h1>');
+			result:
+			// loger($route);
+			//权限判断
+			if ($route->role) {
+				if (!$token = Request::header('token')) {return self::error('Token必填');}
+				if (!$user = token($token, true)) {return self::error('Token错误');}
+				if (!isset($user['role'])) {return self::error('Token异常');}
+				if ($route->role != $user['role']) {return self::error('您无权访问');}
+			}
+			//除开路由方法外 其它模块必须是静态方法
+			if ($route->static) {
+				$result = $route->handler::{$route->method}(Request::all());
+			} else {
+				$result = App::get('route')->{$route->handler}->{$route->method}();
+			}
+
+			return self::success($result);
+		} catch (\Throwable $e) {
+			return self::error($e->getMessage(), $e->getCode());
+		}
+
+	}
+
 	public static function html($result = '') {
 		if (PHP_SAPI == 'cli') {
 			curr('response')->header('Content-Type', 'text/html;charset=utf-8');
