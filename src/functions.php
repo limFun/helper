@@ -8,30 +8,6 @@ class limRoute extends \stdclass
 	function __construct(public $handler, public $method, public $role = null, public $static = false) {}
 }
 
-class limModelResult extends \Stdclass {
-
-	public static function init($data, $handler) {
-		$result = new self;
-		foreach ($data as $k => $v) {
-			$result->$k = $v;
-		}
-		$result->handler = $handler;
-		return $result;
-	}
-
-	public function save($value = '') {
-		loger($this);
-	}
-
-	public function delete($value = '') {
-		// code...
-	}
-
-	public function update($value = '') {
-		// code...
-	}
-}
-
 if (!function_exists('array_shifter')) {
 	function array_shifter(&$o, $k = '', $v = '') {
 		$t = $o[$k] ?? $v;
@@ -106,9 +82,7 @@ if (!function_exists('curr')) {
 	}
 }
 if (!function_exists('app')) {
-	function app(string $v) {
-		return \lim\App::run($v);
-	}
+	function app($k = null, $v = null) {return \lim\App::get($k, $v);}
 }
 
 if (!function_exists('env')) {function env(string $k = '', $v = '') {return isset($GLOBALS['env'][$k]) ? $GLOBALS['env'][$k] : $v;}}
@@ -118,5 +92,5 @@ if (!function_exists('http')) {function http(string $url = '') {return lim\Http:
 if (!function_exists('redis')) {function redis($connection = 'default') {return \lim\Rs::connection($connection);}}
 if (!function_exists('apiErr')) {function apiErr($message = '', $code = 300) {throw new limApiErr($message, $code);}}
 
-lim\Config::init();
+// lim\Config::init();
 lim\App::init();

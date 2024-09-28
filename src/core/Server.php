@@ -73,7 +73,7 @@ class Server {
 	}
 
 	public static function response() {
-		// return Response::parse();
+		return Response::parse();
 		try {
 			$pathArr = explode('/', Request::path());
 			if (count($pathArr) === 2) {

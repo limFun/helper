@@ -17,11 +17,23 @@ class Response {
 			$len = count($uriArr);
 			//左匹配
 			if ($len > 2) {
-				if ($route = App::get('routePath')['/' . $uriArr[1] . '/*'] ?? null) {goto result;}
+				$uri = '/' . $uriArr[1] . '/*';
+				if ($route = App::get('routePath')[$uri] ?? null) {goto result;}
 			}
 			return self::html('<h1>less is more</h1>');
+
 			result:
-			// loger($route);
+			$data = Request::all();
+
+			//请求数据校验
+			if (App::$store['routeRule']['public'] ?? null) {
+				check($data, App::$store['routeRule']['public'])->stop();
+			}
+
+			if ($rule = App::$store['routeRule']['path'][$uri] ?? null) {
+				check($data, $rule)->stop();
+			}
+
 			//权限判断
 			if ($route->role) {
 				if (!$token = Request::header('token')) {return self::error('Token必填');}
@@ -29,11 +41,12 @@ class Response {
 				if (!isset($user['role'])) {return self::error('Token异常');}
 				if ($route->role != $user['role']) {return self::error('您无权访问');}
 			}
+
 			//除开路由方法外 其它模块必须是静态方法
 			if ($route->static) {
-				$result = $route->handler::{$route->method}(Request::all());
+				$result = $route->handler::{$route->method}($data);
 			} else {
-				$result = App::get('route')->{$route->handler}->{$route->method}();
+				$result = App::get('router')->{$route->handler}->{$route->method}($data);
 			}
 
 			return self::success($result);

@@ -26,14 +26,14 @@ class Config {
 
 	public static function get($key = '') {
 		if (!$key) {
-			return $GLOBALS['config'];
+			return App::$store['config'];
 		}
 		if (strpos($key, '.') === false) {
-			return $GLOBALS['config'][$key] ?? null;
+			return App::$store['config'][$key] ?? null;
 		}
 
 		$keys = explode('.', $key);
-		$curr = $GLOBALS['config'];
+		$curr = App::$store['config'];
 		foreach ($keys as $k) {
 			$curr = $curr[$k] ?? null;
 		}

@@ -73,7 +73,7 @@ class Db {
 		}
 
 		$configContent = "<?\nreturn " . str_replace(['{', '}', ':'], ['[', ']', '=>'], json_encode($config, 256)) . ";\n";
-		file_put_contents(ROOT_PATH . 'config/model.php', $configContent);
+		file_put_contents(ROOT_PATH . 'config/schema.php', $configContent);
 		loger('缓存数据库schema成功');
 	}
 	public static function commit() {
@@ -114,12 +114,12 @@ class QueryBuilder {
 		case 'table':
 			$this->option['table'] = $argv[0];
 			$this->option['connection'] = $argv[1] ?? 'default';
-			$this->schema = config('model.' . $this->option['connection'] . '.' . $argv[0]);
+			$this->schema = App::$store['schema'][$this->option['connection']][$argv[0]] ?? [];
 			break;
 		case 'name':
 			$this->option['connection'] = $argv[1] ?? 'default';
 			$this->option['table'] = config('db.' . $this->option['connection'] . '.prefix') . $argv[0];
-			$this->schema = config('model.' . $this->option['connection'] . '.' . $argv[0]);
+			$this->schema = App::$store['schema'][$this->option['connection']][$argv[0]] ?? [];
 			break;
 		case 'field':$this->option['field'] = $argv[0] ?? '*';
 			break;
