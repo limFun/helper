@@ -68,7 +68,7 @@ if (!function_exists('ff')) {
 				if (is_dir($filePath)) {
 					$result = array_merge($result, ff($filePath, $call));
 				} elseif (is_file($filePath)) {
-					if ($call) {$call($filePath, $result);} else { $result[] = $filePath;}
+					if ($call) {$call($filePath, $file);} else { $result[] = $filePath;}
 				}
 			}
 		}

@@ -50,7 +50,10 @@ class Console {
 			if ($content === null) {return;}
 			//目录不存在就先创建目录
 			$dir = dirname($path);
-			if (!is_dir($dir)) {mkdir($dir, 777, true);}
+			if (!is_dir($dir)) {
+				mkdir($dir, 777, true);
+				loger("新增 目录 {$dir} 成功");
+			}
 			//文件存在就跳过创建
 			if (is_file($path)) {return loger($path . ' 已存在!');}
 			file_put_contents($path, $content);
