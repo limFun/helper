@@ -74,7 +74,8 @@ class App {
 
 			//加载配置路由
 			if ($key == 'route') {
-				$route = include $f;
+				$tmp = include $f;
+				$route = self::transformArray($tmp);
 				foreach ($route as $path => $o) {
 					self::$store['routePath'][$path] = new \limRoute($o[0], $o[1], $o[2] ?? null, true);
 				}
@@ -97,6 +98,26 @@ class App {
 		});
 	}
 
+	//路由地址解析
+	protected static function transformArray(array $array, $prefix = '') {
+		$result = [];
+
+		foreach ($array as $key => $value) {
+			// 如果是数组，递归处理
+			if (!isset($value[0])) {
+				$result = array_merge($result, self::transformArray($value, $prefix . '/' . $key));
+			} else {
+				// 假设value总是数组，且第一个元素是类名，第二个是方法名，第三个（可选）是参数
+				// 组装新的键
+				$newKey = rtrim($prefix . '/' . $key, '/');
+				$result[$newKey] = $value;
+
+			}
+		}
+
+		return $result;
+	}
+
 	public static function get($module = null, $o = null) {
 		switch ($module) {
 		case 'redis':return \lim\Rs::connection($o ?? 'default');
@@ -106,10 +127,9 @@ class App {
 			// code...
 			return $module ? self::$store[$module] : self::$store;
 		}
-		// return $module ? self::$store[$module] : self::$store;
 	}
 
-	public static function getConfig($key = '') {
+	public static function getConfig($key = '', $default = null) {
 		if (!$key) {
 			return self::$store['config'];
 		}
@@ -118,10 +138,15 @@ class App {
 		}
 
 		$keys = explode('.', $key);
-		$curr = self::$store['config'];
+		$curr = &self::$store['config'];
 		foreach ($keys as $k) {
-			$curr = $curr[$k] ?? null;
+			if (isset($curr[$k])) {
+				$curr = &$curr[$k];
+			} else {
+				return $default;
+			}
 		}
+
 		return $curr;
 	}
 

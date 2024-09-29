@@ -86,7 +86,7 @@ if (!function_exists('app')) {
 }
 
 if (!function_exists('env')) {function env(string $k = '', $v = '') {return isset($GLOBALS['env'][$k]) ? $GLOBALS['env'][$k] : $v;}}
-if (!function_exists('config')) {function config(string $k = '') {return lim\Config::get($k);}}
+if (!function_exists('config')) {function config(string $k = '') {return lim\App::getConfig($k);}}
 if (!function_exists('check')) {function check($data = [], $rule = []) {return lim\Check::data($data)->rule($rule);}}
 if (!function_exists('http')) {function http(string $url = '') {return lim\Http::url($url);}}
 if (!function_exists('redis')) {function redis($connection = 'default') {return \lim\Rs::connection($connection);}}
