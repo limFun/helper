@@ -84,7 +84,10 @@ class App {
 
 			//加载路由校验规则
 			if ($key == 'rule') {
-				self::$store['routeRule'] = include $f;
+				$tmp = include $f;
+
+				self::$store['routeRule']['public'] = $tmp['public'] ?? [];
+				self::$store['routeRule']['path'] = self::transformArray($tmp['path'] ?? []);
 				return;
 			}
 
@@ -104,10 +107,10 @@ class App {
 
 		foreach ($array as $key => $value) {
 			// 如果是数组，递归处理
-			if (!isset($value[0])) {
+
+			if (count($value) !== count($value, 1)) {
 				$result = array_merge($result, self::transformArray($value, $prefix . '/' . $key));
 			} else {
-				// 假设value总是数组，且第一个元素是类名，第二个是方法名，第三个（可选）是参数
 				// 组装新的键
 				$newKey = rtrim($prefix . '/' . $key, '/');
 				$result[$newKey] = $value;
