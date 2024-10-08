@@ -266,7 +266,7 @@ class QueryBuilder {
 	} //解析条件
 	private function parseResult(&$res = []) {
 		foreach ($res as $k => &$v) {
-			switch ($this->schema[$k][0]) {
+			switch ($this->schema[$k][0] ?? null) {
 			case 'array':$v = $v ? (array) json_decode($v, true) : [];
 				break;
 			case 'json':$v = $v ? (object) json_decode($v, true) : new \stdclass();
