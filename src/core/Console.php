@@ -19,7 +19,7 @@ class Console {
 			if (str_contains($c, '.')) {
 				[$class, $action] = explode('.', $c);
 				$obj = '\\app\\task\\' . ucfirst($class);
-				$obj::$action(...$o);
+				run(fn() => $obj::$action(...$o));
 			} elseif (str_contains($c, '-run')) {
 
 			} else {
