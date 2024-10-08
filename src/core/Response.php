@@ -11,15 +11,6 @@ class Response {
 			$uri = Request::routePath();
 			if ($uri === '/') {return self::html('<h1>less is more</h1>');}
 
-			//请求数据校验
-			if (App::$store['routeRule']['public'] ?? null) {
-				check($data, App::$store['routeRule']['public'])->stop();
-			}
-
-			if ($rule = App::$store['routeRule']['path'][$uri] ?? null) {
-				check($data, $rule)->stop();
-			}
-
 			//完全路径
 			if ($route = App::get('routePath')[$uri] ?? null) {goto result;}
 
@@ -34,6 +25,15 @@ class Response {
 
 			result:
 			$data = Request::all();
+
+			//请求数据校验
+			if (App::$store['routeRule']['public'] ?? null) {
+				check($data, App::$store['routeRule']['public'])->stop();
+			}
+
+			if ($rule = App::$store['routeRule']['path'][$uri] ?? null) {
+				check($data, $rule)->stop();
+			}
 
 			//权限判断
 			if ($route->role) {
