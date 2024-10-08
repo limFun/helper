@@ -119,7 +119,7 @@ class QueryBuilder {
 		case 'name':
 			$this->option['connection'] = $argv[1] ?? 'default';
 			$this->option['table'] = config('db.' . $this->option['connection'] . '.prefix') . $argv[0];
-			$this->schema = App::$store['schema'][$this->option['connection']][$argv[0]] ?? [];
+			$this->schema = App::$store['schema'][$this->option['connection']][$this->option['table']] ?? [];
 			break;
 		case 'field':$this->option['field'] = $argv[0] ?? '*';
 			break;
