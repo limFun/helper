@@ -215,7 +215,7 @@ class QueryBuilder {
 		$this->option['sql'] = "SELECT {$column} FROM `{$this->option['table']}` WHERE {$this->option['where']}{$this->option['order']} LIMIT 1";
 		$res = $this->execute()?->fetch();
 		$this->parseResult($res);
-		return $res[$column];
+		return $res[$column] ?? null;
 	}
 
 	public function column($value = '', $key = null) {
@@ -265,6 +265,9 @@ class QueryBuilder {
 		}
 	} //解析条件
 	private function parseResult(&$res = []) {
+		if (!$res) {
+			return;
+		}
 		foreach ($res as $k => &$v) {
 			switch ($this->schema[$k][0] ?? null) {
 			case 'array':$v = $v ? (array) json_decode($v, true) : [];
