@@ -151,6 +151,10 @@ class QueryBuilder
                 break;
             case 'orwhere':$this->parseWhere('OR', ...$argv);
                 break;
+            case 'wherein':$this->parseWhereIn('AND', ...$argv);
+                break;
+            case 'orwherein':$this->parseWhereIn('OR', ...$argv);
+                break;
             case 'sql':$this->option['sql'] = $argv[0];
                 break;
             case 'sum':case 'max':case 'min':case 'avg':if (! isset($argv[0])) {return null;}
@@ -259,6 +263,16 @@ class QueryBuilder
         } else {
             return $n == 1 ? $res : array_column($res, $value);
         }
+    }
+    private function parseWhereIn($connector, $column, $values)
+    {
+        if (! is_array($values) || empty($values)) {
+            return;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($values), '?'));
+        $this->option['where'] .= " {$connector} `{$column}` IN ({$placeholders})";
+        $this->option['execute'] = array_merge($this->option['execute'], $values);
     }
     private function parseWhere()
     {
