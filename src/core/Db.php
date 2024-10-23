@@ -177,6 +177,12 @@ class QueryBuilder
             case 'join':
                 $this->join($argv[0], $argv[1], $argv[2] ?? 'INNER');
                 break;
+            case 'leftjoin':
+                $this->leftJoin($argv[0], $argv[1]);
+                break;
+            case 'rightjoin':
+                $this->rightJoin($argv[0], $argv[1]);
+                break;
             default:break;
         }
         return $this;
@@ -390,6 +396,16 @@ class QueryBuilder
             'type' => strtoupper($type),
         ];
         return $this;
+    }
+
+    public function leftJoin($table, $condition)
+    {
+        return $this->join($table, $condition, 'LEFT');
+    }
+
+    public function rightJoin($table, $condition)
+    {
+        return $this->join($table, $condition, 'RIGHT');
     }
 }
 
