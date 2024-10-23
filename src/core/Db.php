@@ -301,8 +301,9 @@ class QueryBuilder
             return;
         }
 
+        $field = $this->parseField($column);
         $placeholders = implode(',', array_fill(0, count($values), '?'));
-        $this->option['where'] .= " {$connector} `{$column}` IN ({$placeholders})";
+        $this->option['where'] .= " {$connector} {$field} IN ({$placeholders})";
         $this->option['execute'] = array_merge($this->option['execute'], $values);
     }
     private function parseWhere()
@@ -310,11 +311,13 @@ class QueryBuilder
         $v = func_get_args(); //连接符 字段 比较符号 值
         switch (count($v)) {
             case 4:
-                $this->option['where'] .= " {$v[0]} `{$v[1]}` {$v[2]} ?";
+                $field = $this->parseField($v[1]);
+                $this->option['where'] .= " {$v[0]} {$field} {$v[2]} ?";
                 $this->option['execute'][] = $v[3];
                 break;
             case 3:
-                $this->option['where'] .= " {$v[0]} `{$v[1]}` = ?";
+                $field = $this->parseField($v[1]);
+                $this->option['where'] .= " {$v[0]} {$field} = ?";
                 $this->option['execute'][] = $v[2];
                 break;
             case 2:
@@ -325,7 +328,8 @@ class QueryBuilder
                 //数组条件语句
                 if (is_array($v[1])) {
                     foreach ($v[1] as $k => $value) {
-                        $this->option['where'] .= " {$v[0]} `$k` = ?";
+                        $field = $this->parseField($k);
+                        $this->option['where'] .= " {$v[0]} {$field} = ?";
                         $this->option['execute'][] = $value;
                     }
                 }
@@ -335,6 +339,17 @@ class QueryBuilder
                 break;
         }
     } //解析条件
+
+    private function parseField($field)
+    {
+        if (strpos($field, '.') !== false) {
+            // If the field contains a dot, we assume it's already qualified with a table name
+            return $field;
+        } else {
+            // If not, we wrap it in backticks
+            return "`{$field}`";
+        }
+    }
     private function parseResult(&$res = [])
     {
         if (! $res) {
