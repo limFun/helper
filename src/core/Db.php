@@ -108,7 +108,20 @@ class QueryBuilder
 {
     private $handler;
     private $schema = [];
-    private $option = ['connection' => 'default', 'debug' => false, 'field' => '*', 'table' => '', 'where' => '1', 'group' => '', 'order' => '', 'limit' => '', 'lock' => '', 'sql' => '', 'execute' => []];
+    private $option = [
+        'connection' => 'default',
+        'debug' => false,
+        'field' => '*',
+        'table' => '',
+        'where' => '1',
+        'group' => '',
+        'order' => '',
+        'limit' => '',
+        'lock' => '',
+        'sql' => '',
+        'execute' => [],
+        'join' => [], // Add this new option for joins
+    ];
 
     public function __destruct()
     {
@@ -161,6 +174,9 @@ class QueryBuilder
             case 'count':
                 $this->option['sql'] = "SELECT {$method}(" . ($argv[0] ?? '*') . ") as result FROM {$this->option['table']} WHERE {$this->option['where']}";
                 return $this->execute()->fetch()['result'];
+            case 'join':
+                $this->join($argv[0], $argv[1], $argv[2] ?? 'INNER');
+                break;
             default:break;
         }
         return $this;
@@ -219,7 +235,12 @@ class QueryBuilder
     }
     public function select()
     {
-        $this->option['sql'] = "SELECT {$this->option['field']} FROM {$this->option['table']} WHERE {$this->option['where']}{$this->option['group']}{$this->option['order']}{$this->option['limit']}{$this->option['lock']}";
+        $joinClause = '';
+        foreach ($this->option['join'] as $join) {
+            $joinClause .= " {$join['type']} JOIN {$join['table']} ON {$join['condition']}";
+        }
+
+        $this->option['sql'] = "SELECT {$this->option['field']} FROM {$this->option['table']}{$joinClause} WHERE {$this->option['where']}{$this->option['group']}{$this->option['order']}{$this->option['limit']}{$this->option['lock']}";
 
         if ($res = $this->execute()?->fetchAll()) {
             foreach ($res as $k => &$v) {$this->parseResult($v);}
@@ -228,7 +249,17 @@ class QueryBuilder
     }
     public function find($id = null)
     {
-        $this->option['sql'] = $id ? "SELECT {$this->option['field']} FROM `{$this->option['table']}` WHERE id = $id" : "SELECT {$this->option['field']} FROM `{$this->option['table']}` WHERE {$this->option['where']}{$this->option['order']} LIMIT 1";
+        $joinClause = '';
+        foreach ($this->option['join'] as $join) {
+            $joinClause .= " {$join['type']} JOIN {$join['table']} ON {$join['condition']}";
+        }
+
+        if ($id !== null) {
+            $this->option['where'] = "id = " . intval($id);
+        }
+
+        $this->option['sql'] = "SELECT {$this->option['field']} FROM `{$this->option['table']}`{$joinClause} WHERE {$this->option['where']}{$this->option['order']} LIMIT 1";
+
         if ($res = $this->execute()?->fetch()) {
             $this->parseResult($res);
         }
@@ -335,6 +366,16 @@ class QueryBuilder
         check($data, $rule)->stop();
         return $this;
     }
+    // Add this new method
+    public function join($table, $condition, $type = 'INNER')
+    {
+        $this->option['join'][] = [
+            'table' => $table,
+            'condition' => $condition,
+            'type' => strtoupper($type),
+        ];
+        return $this;
+    }
 }
 
 class PdoHandler
@@ -363,3 +404,4 @@ class PdoHandler
 
     }
 }
+
