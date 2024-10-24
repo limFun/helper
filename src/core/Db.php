@@ -73,6 +73,9 @@ class Db
                 if (str_contains($commit, '|')) {
                     [$commit, $type] = explode('|', $commit);
                 }
+                if (str_contains($commit, ':')) {
+                    [$commit, $e] = explode(':', $commit);
+                }
                 // $config[$con][$v['TABLE_NAME']][$v['COLUMN_NAME']] = ['type' => $type, 'commit' => $commit];
                 $config[$con][$v['TABLE_NAME']][$v['COLUMN_NAME']] = [$type, $commit];
             }
@@ -110,17 +113,17 @@ class QueryBuilder
     private $schema = [];
     private $option = [
         'connection' => 'default',
-        'debug' => false,
-        'field' => '*',
-        'table' => '',
-        'where' => '1',
-        'group' => '',
-        'order' => '',
-        'limit' => '',
-        'lock' => '',
-        'sql' => '',
-        'execute' => [],
-        'join' => [], // Add this new option for joins
+        'debug'      => false,
+        'field'      => '*',
+        'table'      => '',
+        'where'      => '1',
+        'group'      => '',
+        'order'      => '',
+        'limit'      => '',
+        'lock'       => '',
+        'sql'        => '',
+        'execute'    => [],
+        'join'       => [], // Add this new option for joins
     ];
 
     public function __destruct()
@@ -307,7 +310,7 @@ class QueryBuilder
             return;
         }
 
-        $field = $this->parseField($column);
+        $field        = $this->parseField($column);
         $placeholders = implode(',', array_fill(0, count($values), '?'));
         $this->option['where'] .= " {$connector} {$field} IN ({$placeholders})";
         $this->option['execute'] = array_merge($this->option['execute'], $values);
@@ -391,9 +394,9 @@ class QueryBuilder
     public function join($table, $condition, $type = 'INNER')
     {
         $this->option['join'][] = [
-            'table' => $table,
+            'table'     => $table,
             'condition' => $condition,
-            'type' => strtoupper($type),
+            'type'      => strtoupper($type),
         ];
         return $this;
     }
@@ -435,4 +438,3 @@ class PdoHandler
 
     }
 }
-
