@@ -87,6 +87,7 @@ class Task {
      * 执行任务
      */
     private function execute() {
+        // echo sprintf("[%s] Executing task: %s\n", date('Y-m-d H:i:s'), $this->taskName);
         if (class_exists($this->class)) {
             $instance = new $this->class();
             if (method_exists($instance, $this->method)) {
@@ -113,19 +114,44 @@ class Task {
 
         list($second, $minute, $hour, $day, $month, $weekday) = $parts;
 
-        // 处理 /n 格式
-        if (strpos($second, '/') !== false) {
-            $n = (int)substr($second, 1);
-            return (int)$date->format('s') % $n === 0;
-        }
-
-        if ($second !== '*' && $second != $date->format('s')) return false;
-        if ($minute !== '*' && $minute != $date->format('i')) return false;
-        if ($hour !== '*' && $hour != $date->format('H')) return false;
-        if ($day !== '*' && $day != $date->format('d')) return false;
-        if ($month !== '*' && $month != $date->format('m')) return false;
-        if ($weekday !== '*' && $weekday != $date->format('w')) return false;
+        // 检查秒
+        if (!$this->matchField($second, $date->format('s'))) return false;
+        
+        // 检查分
+        if (!$this->matchField($minute, $date->format('i'))) return false;
+        
+        // 检查其他字段
+        if (!$this->matchField($hour, $date->format('H'))) return false;
+        if (!$this->matchField($day, $date->format('d'))) return false;
+        if (!$this->matchField($month, $date->format('m'))) return false;
+        if (!$this->matchField($weekday, $date->format('w'))) return false;
 
         return true;
+    }
+
+    /**
+     * 匹配单个时间字段
+     * @param string $field cron表达式中的字段值
+     * @param string $value 当前时间的对应值
+     * @return bool
+     */
+    private function matchField($field, $value) {
+        // 处理 * 通配符
+        if ($field === '*') {
+            return true;
+        }
+
+        // 处理 /n 格式（每n个时间单位）
+        if (strpos($field, '/') === 0) {
+            $step = (int)substr($field, 1);
+            return (int)$value % $step === 0;
+        }
+
+        // 处理纯数字（第n个时间单位）
+        if (is_numeric($field)) {
+            return (int)$field === (int)$value;
+        }
+
+        return false;
     }
 } 
