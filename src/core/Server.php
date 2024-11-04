@@ -10,7 +10,7 @@ class Server {
 	protected $option = null;
 
 	public static function run() {
-		(new self)->server()->watch()->handler->start();
+		(new self)->server()->watch()->task()->handler->start();
 	}
 
 	public function watch() {
@@ -27,6 +27,11 @@ class Server {
 			}
 		}, false, 1, true);
 		$this->handler->addProcess($proces);return $this;
+	}
+
+	function task() {
+		Task::run();
+		return $this;
 	}
 
 	public function server() {
