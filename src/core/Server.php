@@ -30,8 +30,12 @@ class Server {
 	}
 
 	function task() {
-		cli_set_process_title($this->option['name'] . '-Tasker');
-		Task::run();
+		$proces = new Process(function () {
+			cli_set_process_title($this->option['name'] . '-Tasker');
+			Task::run();
+			loger('task');
+		}, false, 1, true);
+		$this->handler->addProcess($proces);
 		return $this;
 	}
 
