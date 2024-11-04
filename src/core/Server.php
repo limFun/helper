@@ -30,6 +30,7 @@ class Server {
 	}
 
 	function task() {
+		cli_set_process_title($this->option['name'] . '-Tasker');
 		Task::run();
 		return $this;
 	}
