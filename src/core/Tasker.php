@@ -3,7 +3,7 @@ declare (strict_types = 1);
 namespace lim;
 use Exception;
 
-class Task {
+class Tasker {
     private static $tasks = [];
     private $taskName;
     private $timer;

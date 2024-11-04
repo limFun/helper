@@ -32,7 +32,7 @@ class Server {
 	function task() {
 		$proces = new Process(function () {
 			cli_set_process_title($this->option['name'] . '-Tasker');
-			Task::run();
+			Tasker::run();
 			loger('task');
 		}, false, 1, true);
 		$this->handler->addProcess($proces);
