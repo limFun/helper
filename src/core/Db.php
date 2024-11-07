@@ -175,7 +175,11 @@ class QueryBuilder
                 break;
             case 'sum':case 'max':case 'min':case 'avg':if (! isset($argv[0])) {return null;}
             case 'count':
-                $this->option['sql'] = "SELECT {$method}(" . ($argv[0] ?? '*') . ") as result FROM {$this->option['table']} WHERE {$this->option['where']}";
+                $joinClause = '';
+                foreach ($this->option['join'] as $join) {
+                    $joinClause .= " {$join['type']} JOIN {$join['table']} ON {$join['condition']}";
+                }
+                $this->option['sql'] = "SELECT {$method}(" . ($argv[0] ?? '*') . ") as result FROM {$this->option['table']}{$joinClause} WHERE {$this->option['where']}";
                 return $this->execute()->fetch()['result'];
             case 'join':
                 $this->join($argv[0], $argv[1], $argv[2] ?? 'INNER');
