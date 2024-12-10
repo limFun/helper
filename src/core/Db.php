@@ -36,20 +36,35 @@ class Db
     public static function transaction($connection = 'default', $call = null)
     {
         self::init($connection);
-        if ($call) {
-            self::connection(self::$connection)->handler->beginTransaction();
-            try {
-                $call();
-                self::connection(self::$connection)->handler->commit();
-            } catch (PDOException $e) {
-                loger($e->getMessage());
-                self::connection(self::$connection)->handler->rollback();
+        $pdo = self::connection(self::$connection)->handler;
+        
+        try {
+            // 如果已经在事务中，直接执行回调
+            if ($pdo->inTransaction()) {
+                return $call ? $call() : null;
             }
-            self::init(self::$connection)->push(self::connection(self::$connection));
-            Context::delete('pdo' . self::$connection);
-            self::$connection = 'default';
-        } else {
-            self::connection(self::$connection)->handler->beginTransaction();
+
+            // 开启事务
+            $pdo->beginTransaction();
+            
+            if ($call) {
+                $result = $call();
+                $pdo->commit();
+                return $result;
+            }
+        } catch (\Throwable $e) {
+            // 如果事务已开启则回滚
+            if ($pdo && $pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            loger($e->getMessage());
+            throw $e;
+        } finally {
+            if (PHP_SAPI == 'cli' && !$call) {
+                self::init(self::$connection)->push(self::connection(self::$connection));
+                Context::delete('pdo' . self::$connection);
+                self::$connection = 'default';
+            }
         }
     }
     public static function schema()
@@ -87,17 +102,41 @@ class Db
     }
     public static function commit()
     {
-        self::connection(self::$connection)->handler->commit();
-        self::init(self::$connection)->push(self::connection(self::$connection));
-        Context::delete('pdo' . self::$connection);
-        self::$connection = 'default';
+        $pdo = self::connection(self::$connection)->handler;
+        
+        try {
+            if (!$pdo->inTransaction()) {
+                throw new \PDOException('There is no active transaction to commit');
+            }
+            
+            $result = $pdo->commit();
+            return $result;
+        } finally {
+            if (PHP_SAPI == 'cli') {
+                self::init(self::$connection)->push(self::connection(self::$connection));
+                Context::delete('pdo' . self::$connection);
+                self::$connection = 'default';
+            }
+        }
     }
     public static function rollback()
     {
-        self::connection(self::$connection)->handler->rollback();
-        self::init(self::$connection)->push(self::connection(self::$connection));
-        Context::delete('pdo' . self::$connection);
-        self::$connection = 'default';
+        $pdo = self::connection(self::$connection)->handler;
+        
+        try {
+            if (!$pdo->inTransaction()) {
+                throw new \PDOException('There is no active transaction to rollback');
+            }
+            
+            $result = $pdo->rollBack();
+            return $result;
+        } finally {
+            if (PHP_SAPI == 'cli') {
+                self::init(self::$connection)->push(self::connection(self::$connection));
+                Context::delete('pdo' . self::$connection);
+                self::$connection = 'default';
+            }
+        }
     }
 
     public static function __callStatic($method, $argv)
