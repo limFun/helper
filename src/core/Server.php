@@ -13,7 +13,7 @@ class Server
 
     public static function run()
     {
-        (new self)->server()->watch()->task()->handler->start();
+        (new self)->server()->task()->handler->start();
     }
 
     public function watch()
