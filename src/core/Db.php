@@ -3,7 +3,6 @@ declare (strict_types = 1);
 namespace lim;
 
 use PDO;
-use PDOException;
 
 class Db
 {
@@ -37,7 +36,7 @@ class Db
     {
         self::init($connection);
         $pdo = self::connection(self::$connection)->handler;
-        
+
         try {
             // 如果已经在事务中，直接执行回调
             if ($pdo->inTransaction()) {
@@ -46,7 +45,7 @@ class Db
 
             // 开启事务
             $pdo->beginTransaction();
-            
+
             if ($call) {
                 $result = $call();
                 $pdo->commit();
@@ -60,7 +59,7 @@ class Db
             loger($e->getMessage());
             throw $e;
         } finally {
-            if (PHP_SAPI == 'cli' && !$call) {
+            if (PHP_SAPI == 'cli' && ! $call) {
                 self::init(self::$connection)->push(self::connection(self::$connection));
                 Context::delete('pdo' . self::$connection);
                 self::$connection = 'default';
@@ -103,12 +102,12 @@ class Db
     public static function commit()
     {
         $pdo = self::connection(self::$connection)->handler;
-        
+
         try {
-            if (!$pdo->inTransaction()) {
+            if (! $pdo->inTransaction()) {
                 throw new \PDOException('There is no active transaction to commit');
             }
-            
+
             $result = $pdo->commit();
             return $result;
         } finally {
@@ -122,12 +121,12 @@ class Db
     public static function rollback()
     {
         $pdo = self::connection(self::$connection)->handler;
-        
+
         try {
-            if (!$pdo->inTransaction()) {
+            if (! $pdo->inTransaction()) {
                 throw new \PDOException('There is no active transaction to rollback');
             }
-            
+
             $result = $pdo->rollBack();
             return $result;
         } finally {
@@ -218,7 +217,7 @@ class QueryBuilder
                 foreach ($this->option['join'] as $join) {
                     $joinClause .= " {$join['type']} JOIN {$join['table']} ON {$join['condition']}";
                 }
-                $this->option['sql'] = "SELECT {$method}(" . ($argv[0] ?? '*') . ") as result FROM {$this->option['table']}{$joinClause} WHERE {$this->option['where']}";
+                $this->option['sql'] = "SELECT {$method}(" . ($argv[0] ?? '*') . ") as result FROM `{$this->option['table']}`{$joinClause} WHERE {$this->option['where']}";
                 return $this->execute()->fetch()['result'];
             case 'join':
                 $this->join($argv[0], $argv[1], $argv[2] ?? 'INNER');
@@ -236,13 +235,13 @@ class QueryBuilder
     public function incr(string $key = '', int $num = 1): mixed
     {
         if (! $key || ! isset($this->schema[$key])) {return null;}
-        $this->option['sql'] = "UPDATE {$this->option['table']} SET `{$key}` = `{$key}` + {$num} WHERE {$this->option['where']}";
+        $this->option['sql'] = "UPDATE `{$this->option['table']}` SET `{$key}` = `{$key}` + {$num} WHERE {$this->option['where']}";
         return $this->execute()->errorCode() == '00000' ? true : false;
     }
     public function decr(string $key = '', int $num = 1): mixed
     {
         if (! $key || ! isset($this->schema[$key])) {return null;}
-        $this->option['sql'] = "UPDATE {$this->option['table']} SET `{$key}` = `{$key}` - {$num} WHERE {$this->option['where']}";
+        $this->option['sql'] = "UPDATE `{$this->option['table']}` SET `{$key}` = `{$key}` - {$num} WHERE {$this->option['where']}";
         return $this->execute()->errorCode() == '00000' ? true : false;
     }
     public function insert($data = [], $id = false)
@@ -264,7 +263,7 @@ class QueryBuilder
     }
     public function delete($id = null)
     {
-        $this->option['sql'] = $id ? "DELETE FROM {$this->option['table']} WHERE id = $id" : "DELETE FROM {$this->option['table']} WHERE {$this->option['where']}";
+        $this->option['sql'] = $id ? "DELETE FROM `{$this->option['table']}` WHERE id = $id" : "DELETE FROM {$this->option['table']} WHERE {$this->option['where']}";
         return $this->execute();
     }
     public function update($data = [])
@@ -292,7 +291,7 @@ class QueryBuilder
             $joinClause .= " {$join['type']} JOIN {$join['table']} ON {$join['condition']}";
         }
 
-        $this->option['sql'] = "SELECT {$this->option['field']} FROM {$this->option['table']}{$joinClause} WHERE {$this->option['where']}{$this->option['group']}{$this->option['order']}{$this->option['limit']}{$this->option['lock']}";
+        $this->option['sql'] = "SELECT {$this->option['field']} FROM `{$this->option['table']}`{$joinClause} WHERE {$this->option['where']}{$this->option['group']}{$this->option['order']}{$this->option['limit']}{$this->option['lock']}";
 
         if ($res = $this->execute()?->fetchAll()) {
             foreach ($res as $k => &$v) {$this->parseResult($v);}
@@ -329,7 +328,7 @@ class QueryBuilder
     {
         $field               = $key ? $key . ',' . $value : $value;
         $n                   = substr_count($field, ',');
-        $this->option['sql'] = "SELECT {$field} FROM {$this->option['table']} WHERE {$this->option['where']}{$this->option['group']}{$this->option['order']}{$this->option['limit']}{$this->option['lock']}";
+        $this->option['sql'] = "SELECT {$field} FROM `{$this->option['table']}` WHERE {$this->option['where']}{$this->option['group']}{$this->option['order']}{$this->option['limit']}{$this->option['lock']}";
         $res                 = $this->execute()?->fetchAll();
         foreach ($res as $k => &$v) {$this->parseResult($v);}
         if ($key) {
@@ -469,7 +468,7 @@ class PdoHandler
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_STRINGIFY_FETCHES  => false,
             PDO::ATTR_EMULATE_PREPARES   => false, // 这2个是跟数字相关的设置
-            PDO::ATTR_TIMEOUT => $this->option['timeout'],
+            PDO::ATTR_TIMEOUT            => $this->option['timeout'],
             // PDO::ATTR_PERSISTENT=>true,
         ];
 
