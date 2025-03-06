@@ -298,6 +298,33 @@ class QueryBuilder
         }
         return $res;
     }
+
+    public function list($o = [])
+    {
+        if (! $this->option['limit']) {
+            $p                     = $o['page'] ?? 1;
+            $page                  = $p < 2 ? 0 : $p - 1;
+            $limit                 = $o['limit'] ?? 10;
+            $offset                = $page * $limit;
+            $this->option['limit'] = " LIMIT $offset,$limit";
+        }
+
+        $joinClause = '';
+        foreach ($this->option['join'] as $join) {
+            $joinClause .= " {$join['type']} JOIN {$join['table']} ON {$join['condition']}";
+        }
+
+        $this->option['sql'] = "SELECT {$this->option['field']} FROM `{$this->option['table']}`{$joinClause} WHERE {$this->option['where']}{$this->option['group']}{$this->option['order']}{$this->option['limit']}{$this->option['lock']}";
+
+        $countSql        = "SELECT COUNT(1) AS total FROM `{$this->option['table']}`{$joinClause} WHERE {$this->option['where']}";
+        $result['count'] = $this->execute($countSql)?->fetch()['total'] ?? 0;
+        if ($res = $this->execute()?->fetchAll()) {
+            foreach ($res as $k => &$v) {$this->parseResult($v);}
+        }
+        $result['list'] = $res;
+        return $result;
+    }
+
     public function find($id = null)
     {
         $joinClause = '';
@@ -413,19 +440,20 @@ class QueryBuilder
                 case 'json':$v = $v ? (object) json_decode($v, true) : new \stdclass();
                     break;
                 // case 'string':$v ??= '';
-                // 	break;
+                //  break;
                 default:break;
             }
         }
     } //解析结果
-    public function execute()
+    public function execute($sql = null, $opt = null)
     {
         if ($this->option['debug']) {return loger($this);}
         // loger($this);
-        $h = Db::connection($this->option['connection'])->handler->prepare($this->option['sql']);
-        $h->execute($this->option['execute']);
+        $h = Db::connection($this->option['connection'])->handler->prepare($sql ?? $this->option['sql']);
+        $h->execute($opt ?? $this->option['execute']);
         return $h;
     } //执行查询
+
     public function check($data = [], $rule = [])
     {
         foreach ($this->schema as $k => $v) {$rule[$v[1] . '|' . $k] = $v[0];}
