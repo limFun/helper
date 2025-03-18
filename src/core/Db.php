@@ -232,13 +232,13 @@ class QueryBuilder
         }
         return $this;
     }
-    public function incr(string $key = '', int $num = 1): mixed
+    public function incr(string $key = '', float | int $num = 1): mixed
     {
         if (! $key || ! isset($this->schema[$key])) {return null;}
         $this->option['sql'] = "UPDATE `{$this->option['table']}` SET `{$key}` = `{$key}` + {$num} WHERE {$this->option['where']}";
         return $this->execute()->errorCode() == '00000' ? true : false;
     }
-    public function decr(string $key = '', int $num = 1): mixed
+    public function decr(string $key = '', float | int $num = 1): mixed
     {
         if (! $key || ! isset($this->schema[$key])) {return null;}
         $this->option['sql'] = "UPDATE `{$this->option['table']}` SET `{$key}` = `{$key}` - {$num} WHERE {$this->option['where']}";
