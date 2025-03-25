@@ -34,6 +34,10 @@ class Db
     }
     public static function transaction($connection = 'default', $call = null)
     {
+        if (! is_string($connection)) {
+            $call       = $connection;
+            $connection = 'default';
+        }
         self::init($connection);
         $pdo = self::connection(self::$connection)->handler;
 
@@ -263,7 +267,7 @@ class QueryBuilder
     }
     public function delete($id = null)
     {
-        $this->option['sql'] = $id ? "DELETE FROM `{$this->option['table']}` WHERE id = $id" : "DELETE FROM {$this->option['table']} WHERE {$this->option['where']}";
+        $this->option['sql'] = $id ? "DELETE FROM `{$this->option['table']}` WHERE id = $id" : "DELETE FROM `{$this->option['table']}` WHERE {$this->option['where']}";
         return $this->execute();
     }
     public function update($data = [])
@@ -293,7 +297,8 @@ class QueryBuilder
 
         $this->option['sql'] = "SELECT {$this->option['field']} FROM `{$this->option['table']}`{$joinClause} WHERE {$this->option['where']}{$this->option['group']}{$this->option['order']}{$this->option['limit']}{$this->option['lock']}";
 
-        if ($res = $this->execute()?->fetchAll()) {
+        $res = $this->execute()->fetchAll() ?? [];
+        if ($res) {
             foreach ($res as $k => &$v) {$this->parseResult($v);}
         }
         return $res;
@@ -451,6 +456,15 @@ class QueryBuilder
         // loger($this);
         $h = Db::connection($this->option['connection'])->handler->prepare($sql ?? $this->option['sql']);
         $h->execute($opt ?? $this->option['execute']);
+
+        // 对于select查询，确保在返回结果前预取所有数据，避免未缓冲查询问题
+        if (stripos(($sql ?? $this->option['sql']), 'SELECT') === 0) {
+            // 预取数据但不消费结果，这样PDO会缓冲所有结果
+            $h->fetchAll(PDO::FETCH_ASSOC);
+            // 重置指针以便后续操作可以正常获取数据
+            $h->execute($opt ?? $this->option['execute']);
+        }
+
         return $h;
     } //执行查询
 
@@ -492,12 +506,13 @@ class PdoHandler
     {
         $dsn = "mysql:host={$this->option['host']};dbname={$this->option['database']};port={$this->option['port']};charset={$this->option['charset']}";
         $opt = [
-            PDO::ATTR_DEFAULT_FETCH_MODE => $this->option['fetch_mode'] ?? PDO::FETCH_ASSOC,
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_STRINGIFY_FETCHES  => false,
-            PDO::ATTR_EMULATE_PREPARES   => false, // 这2个是跟数字相关的设置
-            PDO::ATTR_TIMEOUT            => $this->option['timeout'],
-            // PDO::ATTR_PERSISTENT=>true,
+            PDO::ATTR_DEFAULT_FETCH_MODE       => $this->option['fetch_mode'] ?? PDO::FETCH_ASSOC,
+            PDO::ATTR_ERRMODE                  => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_STRINGIFY_FETCHES        => false,
+            PDO::ATTR_EMULATE_PREPARES         => false, // 这2个是跟数字相关的设置
+            PDO::ATTR_TIMEOUT                  => $this->option['timeout'],
+            PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true, // 确保所有查询都使用缓冲模式
+                                                        // PDO::ATTR_PERSISTENT=>true,
         ];
 
         $pool           = new \Stdclass;
