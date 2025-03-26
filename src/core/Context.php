@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare (strict_types = 1);
 namespace lim;
 
 /**
@@ -13,7 +13,7 @@ class Context
      * @var array
      */
     private static array $container = [];
-    
+
     /**
      * 设置上下文数据
      * @param string $key 键名
@@ -28,7 +28,7 @@ class Context
             self::$container[$key] = $value;
         }
     }
-    
+
     /**
      * 获取上下文数据
      * @param string $key 键名
@@ -40,10 +40,10 @@ class Context
         if (class_exists('Swoole\Coroutine') && \Swoole\Coroutine::getCid() > 0) {
             return \Swoole\Coroutine::getContext()[$key] ?? $default;
         }
-        
+
         return self::$container[$key] ?? $default;
     }
-    
+
     /**
      * 删除上下文数据
      * @param string $key 键名
@@ -57,7 +57,7 @@ class Context
             unset(self::$container[$key]);
         }
     }
-    
+
     /**
      * 获取所有上下文数据
      * @return array
@@ -65,22 +65,18 @@ class Context
     public static function getAll(): array
     {
         if (class_exists('Swoole\Coroutine') && \Swoole\Coroutine::getCid() > 0) {
-            return (array)\Swoole\Coroutine::getContext();
+            return (array) \Swoole\Coroutine::getContext();
         }
-        
+
         return self::$container;
     }
-    
+
     /**
      * 清空上下文数据
      * @return void
      */
     public static function clear(): void
     {
-        if (class_exists('Swoole\Coroutine') && \Swoole\Coroutine::getCid() > 0) {
-            \Swoole\Coroutine::getContext() = [];
-        } else {
-            self::$container = [];
-        }
+
     }
 }
