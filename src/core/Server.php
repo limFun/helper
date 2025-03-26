@@ -91,7 +91,6 @@ class Server
             return $response->end();
         }
         self::response();
-        Context::clear();
     }
 
     public static function response()
